@@ -29,7 +29,7 @@ const pool = createPool({
   host: "localhost",
   user: "root",
   database: "waif",
-  password: "",
+  password: "123Warna!",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
