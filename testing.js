@@ -330,7 +330,7 @@ async function startBot() {
     3. Jaringan Komputer (Prak) - DP - TA 10.3  
     🕘 13.‌40 sd 17.‌00`,
     
-      ".jumat": `📌 *Jumat - IF 2D*
+      ".jumaat": `📌 *Jumat - IF 2D*
     
     1. DRPL (Prak) - UM - GU 704  
     🕘 07.‌50 sd 10.‌20  
