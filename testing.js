@@ -145,7 +145,9 @@ async function startBot() {
       const [rows] = await pool.query(
         "SELECT * FROM saran ORDER BY dibuat DESC LIMIT 15"
       );
-      const [countTotalConfess] = await pool.query("SELECT COUNT(*) AS totalConfess FROM confess");
+      const [countTotalConfess] = await pool.query(
+        "SELECT COUNT(*) AS totalConfess FROM confess"
+      );
       const countConfessTotal = countTotalConfess[0].totalConfess;
       const [countsaran] = await pool.query("SELECT COUNT(*) FROM saran");
       const countTotalSaran = countsaran[0]["COUNT(*)"];
@@ -164,7 +166,12 @@ async function startBot() {
     const lowerText = pesan.toLowerCase();
     const katakata = lowerText;
     if (kataKotor.some((kata) => katakata.includes(kata))) {
-      return res.status(403).json({message: "Gagal Mengirim Confess, Otomatis MenDeteksi Analisa Sentimen -1 / Negatif dan mengujar Kebencian"})
+      return res
+        .status(403)
+        .json({
+          message:
+            "Gagal Mengirim Confess, Otomatis MenDeteksi Analisa Sentimen -1 / Negatif dan mengujar Kebencian",
+        });
     }
     try {
       const [rows] = await pool.query("SELECT nama FROM users WHERE id = ?", [
@@ -178,7 +185,9 @@ async function startBot() {
         "INSERT INTO confess (id_users, pesan, dibuat) VALUES (?, ?, ?)",
         [userid, pesan, dibuat]
       );
-      return res.status(200).json({ message: `Confess Berhasil Dikirim Ke WhatsApp ${nama}`});
+      return res
+        .status(200)
+        .json({ message: `Confess Berhasil Dikirim Ke WhatsApp ${nama}` });
     } catch (error) {
       console.error("error fetch confess");
       return res.status(500).json({ message: "Internal Server Eror" });
@@ -283,18 +292,54 @@ async function startBot() {
       padim: "tekno le",
     };
     const jadwal = {
-      ".senin":
-        "Jadwal Hari Senin IF 2D\n\n1. DRPL - UM - Online - 07.50/08.40\n2. PBO - HW - Online - 08.40/10.20\n3. PROWEB - DE - Online - 10.20/12.00\n4. Basis Data - DW - Online - 13.40/15.20",
-      ".selasa":
-        "Jadwal Hari Selasa IF 2D\n\n1. Jaringan Komputer - DP - Online - 07.50/09.30\n2. Pembuatan Prototype - MS - GU 805 - 12.50/16.10",
-      ".rabu":
-        "Jadwal Hari Rabu IF 2D\n\n1. Basis Data (Prak) - BN - GU 702 - 09.30/12.50",
-      ".kamis":
-        "Jadwal Hari Kamis IF 2D\n\n1. PBO (Prak) - BN - GU 702 - 07.50/09.30\n2. PROWEB (Prak) - NN - GU 805 - 09.30/12.10\n3. Jaringan Komputer (Prak) - DP - TA 10.3 - 13.40/17.00",
-      ".jumat":
-        "Jadwal Hari Jumat IF 2D\n\n1. DRPL (Prak) - UM - GU 704 - 07.50/10.20\n2. BIngKom - BY - GU 701 - 13.40/17.00",
+      ".senin": `📌 *Senin - IF 2D*
+    
+    1. DRPL - UM - Online  
+    🕘 07.‌50 sd 08.‌40  
+    ====================
+    2. PBO - HW - Online  
+    🕘 08.‌40 sd 10.‌20  
+    ====================
+    3. PROWEB - DE - Online  
+    🕘 10.‌20 sd 12.‌00  
+    ====================
+    4. Basis Data - DW - Online  
+    🕘 13.‌40 sd 15.‌20`,
+    
+      ".selasa": `📌 *Selasa - IF 2D*
+    
+    1. Jaringan Komputer - DP - Online  
+    🕘 07.‌50 sd 09.‌30  
+    ====================
+    2. Pembuatan Prototype - MS - GU 805  
+    🕘 12.‌50 sd 16.‌10`,
+    
+      ".rabu": `📌 *Rabu - IF 2D*
+    
+    1. Basis Data (Prak) - BN - GU 702  
+    🕘 09.‌30 sd 12.‌50`,
+    
+      ".kamis": `📌 *Kamis - IF 2D*
+    
+    1. PBO (Prak) - BN - GU 702  
+    🕘 07.‌50 sd 09.‌30  
+    ====================
+    2. PROWEB (Prak) - NN - GU 805  
+    🕘 09.‌30 sd 12.‌10  
+    ====================
+    3. Jaringan Komputer (Prak) - DP - TA 10.3  
+    🕘 13.‌40 sd 17.‌00`,
+    
+      ".jumat": `📌 *Jumat - IF 2D*
+    
+    1. DRPL (Prak) - UM - GU 704  
+    🕘 07.‌50 sd 10.‌20  
+    ====================
+    2. BIngKom - BY - GU 701  
+    🕘 13.‌40 sd 17.‌00`
     };
-
+    
+    
 
     // Deteksi kata kotor
     if (kataKotor.some((kata) => pesan.includes(kata))) {
@@ -347,11 +392,6 @@ async function startBot() {
         });
       }
       //END CEK CONFESS
-
-
-
-
-
     } else if (pesan === ".saran") {
       try {
         const [rows] = await pool.query(
@@ -394,10 +434,16 @@ async function startBot() {
       //DELETE CONFESS
     } else if (pesan === ".hapusconfess") {
       try {
-        await pool.query("DELETE FROM confess WHERE id_users = ?", [senderNumber]);
-        await sock.sendMessage(senderNumber, { text: "✅ Berhasil Mnghapus Seluruh Confess mu" });
+        await pool.query("DELETE FROM confess WHERE id_users = ?", [
+          senderNumber,
+        ]);
+        await sock.sendMessage(senderNumber, {
+          text: "✅ Berhasil Mnghapus Seluruh Confess mu",
+        });
       } catch (error) {
-        await sock.sendMessage(senderNumber, { text: "❌ Gagal Menghapus, Tolong hubungi developer" });
+        await sock.sendMessage(senderNumber, {
+          text: "❌ Gagal Menghapus, Tolong hubungi developer",
+        });
       }
     } else if (messageText.toLowerCase().startsWith("echo ")) {
       const echo = messageText.slice(5);
@@ -405,7 +451,6 @@ async function startBot() {
     }
   });
 }
-
 
 await startBot();
 app.listen(3000, () => {
