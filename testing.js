@@ -317,7 +317,7 @@ async function startBot() {
       ".rabu": `📌 *Rabu - IF 2D*
     
     1. Basis Data (Prak) - BN - GU 702  
-    🕘 09.‌30 sd 12.‌50`,
+    🕘 10.‌20 sd 12.‌50`,
     
       ".kamis": `📌 *Kamis - IF 2D*
     
@@ -325,7 +325,7 @@ async function startBot() {
     🕘 07.‌50 sd 09.‌30  
     ====================
     2. PROWEB (Prak) - NN - GU 805  
-    🕘 09.‌30 sd 12.‌10  
+    🕘 10.‌20 sd 12.‌10  
     ====================
     3. Jaringan Komputer (Prak) - DP - TA 10.3  
     🕘 13.‌40 sd 17.‌00`,
@@ -336,7 +336,7 @@ async function startBot() {
     🕘 07.‌50 sd 10.‌20  
     ====================
     2. BIngKom - BY - GU 701  
-    🕘 13.‌40 sd 17.‌00`
+    🕘 14.‌30 sd 17.‌00`
     };
     
     
