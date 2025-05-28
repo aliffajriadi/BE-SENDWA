@@ -390,7 +390,7 @@ async function startBot() {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
     } else if (pesan === ".menu" || pesan === "menu" || pesan === '".menu"') {
       await sock.sendMessage(senderNumber, {
-        text: "Hallo silahkan pilih menu \n1. Website waifd.vercel.app \n2. Cek Jadwal (.jadwal) \n3. Cek Saran (.saran)\n4. Cek Yang Confess keKamu (.confess) \n5. Hapus Confess (.hapusconfess)",
+        text: "Hallo silahkan pilih menu \n1. Website waifd.vercel.app \n2. Cek Jadwal (.jadwal) \n3. Cek Saran (.saran)\n4. Cek Yang Confess keKamu (.confess) \n5. Hapus Confess (.hapusconfess) \n6. Download Tiktok (.tiktok <link>)",
       });
     } else if (jadwal[pesan]) {
       await sock.sendMessage(senderNumber, { text: jadwal[pesan] });
