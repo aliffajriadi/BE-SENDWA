@@ -13,6 +13,8 @@ import qrcode from "qrcode-terminal";
 import fs from "fs";
 import { text } from "stream/consumers";
 import { timeAgo } from "./func.js";
+import cheerio from "cherio/lib/cheerio.js";
+import axios from "axios";
 
 // Try to import WebSocket if needed
 try {
@@ -165,12 +167,10 @@ async function startBot() {
     const lowerText = pesan.toLowerCase();
     const katakata = lowerText;
     if (kataKotor.some((kata) => katakata.includes(kata))) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Gagal Mengirim Confess, Otomatis MenDeteksi Analisa Sentimen -1 / Negatif dan mengujar Kebencian",
-        });
+      return res.status(403).json({
+        message:
+          "Gagal Mengirim Confess, Otomatis MenDeteksi Analisa Sentimen -1 / Negatif dan mengujar Kebencian",
+      });
     }
     try {
       const [rows] = await pool.query("SELECT nama FROM users WHERE id = ?", [
@@ -304,7 +304,7 @@ async function startBot() {
     ====================
     4. Basis Data - DW - Online  
     🕘 13.‌40 sd 15.‌20`,
-    
+
       ".selasa": `📌 *Selasa - IF 2D*
     
     1. Jaringan Komputer - DP - Online  
@@ -312,12 +312,12 @@ async function startBot() {
     ====================
     2. Pembuatan Prototype - MS - GU 805  
     🕘 12.‌50 sd 16.‌10`,
-    
+
       ".rabu": `📌 *Rabu - IF 2D*
     
     1. Basis Data (Prak) - BN - GU 702  
     🕘 10.‌20 sd 12.‌50`,
-    
+
       ".kamis": `📌 *Kamis - IF 2D*
     
     1. PBO (Prak) - BN - GU 702  
@@ -328,17 +328,58 @@ async function startBot() {
     ====================
     3. Jaringan Komputer (Prak) - DP - TA 10.3  
     🕘 13.‌40 sd 17.‌00`,
-    
+
       ".jumaat": `📌 *Jumat - IF 2D*
     
     1. DRPL (Prak) - UM - GU 704  
     🕘 07.‌50 sd 10.‌20  
     ====================
     2. BIngKom - BY - GU 701  
-    🕘 14.‌30 sd 17.‌00`
+    🕘 14.‌30 sd 17.‌00`,
     };
-    
-    
+
+    //===================================================================
+    // TIKTOK - diletakkan di atas semua handler
+    const ttsave = {
+      download: async (url) => {
+        const apiUrl = "https://ttsave.app/download"; // sekarang di scope yang tepat
+        const headers = {
+          Accept: "text/html,application/xhtml+xml",
+          "Content-Type": "application/json",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+          Referer: "https://ttsave.app/id",
+        };
+
+        const data = { query: url, language_id: "2" };
+
+        try {
+          const response = await axios.post(apiUrl, data, { headers });
+          const html = response.data;
+          return await ttsave.extract(html);
+        } catch (error) {
+          console.error("Download error:", error.message);
+          return null;
+        }
+      },
+
+      extract: async (html) => {
+        const $ = cheerio.load(html);
+        return {
+          username: $("h2.font-extrabold").text().trim(),
+          userHandle: $("a[title]").text().trim(),
+          description: $("p.oneliner").text().trim(),
+          downloadLinks: {
+            video:
+              $('a[type="no-watermark"]').attr("href") ||
+              $('a[type="watermark"]').attr("href"),
+            image: $('a[type="cover"]').attr("href"),
+            audio: $('a[type="audio"]').attr("href"),
+          },
+        };
+      },
+    };
+    //===================================================================
 
     // Deteksi kata kotor
     if (kataKotor.some((kata) => pesan.includes(kata))) {
@@ -430,6 +471,52 @@ async function startBot() {
         text: "Pilih Hari \n .senin \n .selasa \n .rabu \n .kamis \n .jumaat",
       });
 
+      //TIKTOK HANDLER
+    } else if (messageText.startsWith(".tiktok")) {
+      const query = messageText.split(" ")[1];
+      if (!query) {
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: "Contoh penggunaan: !tiktok https://vt.tiktok.com/xxxx",
+        });
+        return;
+      }
+
+      try {
+        const data = await ttsave.download(query);
+        if (!data || !data.downloadLinks.video) {
+          throw new Error("Tidak bisa mengambil video.");
+        }
+        await sock.sendMessage(senderNumber, {
+          text: "sabar lee ya, lagi download .............",
+        });
+
+        const result = await axios.get(data.downloadLinks.video, {
+          responseType: "arraybuffer",
+        });
+
+        const videoBuffer = Buffer.from(result.data);
+        if (videoBuffer.length > 16 * 1024 * 1024) {
+          return sock.sendMessage(msg.key.remoteJid, {
+            text: "Ukuran video terlalu besar (>16MB). Tidak bisa dikirim pulak leeee.",
+          });
+        }
+
+        await sock.sendMessage(
+          msg.key.remoteJid,
+          {
+            video: videoBuffer,
+            mimetype: "video/mp4",
+            caption: `🎬 Sukses Mendownload Leee`,
+          },
+          { quoted: msg }
+        );
+      } catch (err) {
+        console.error("Gagal proses TikTok:", err.message);
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: "Gagal mendownload video TikTok. Pastikan link valid dan coba lagi.",
+        });
+      }
+
       //DELETE CONFESS
     } else if (pesan === ".hapusconfess") {
       try {
@@ -452,7 +539,6 @@ async function startBot() {
 }
 
 await startBot();
-app.listen(3000, '0.0.0.0', () => {
+app.listen(3000, "0.0.0.0", () => {
   console.log("Server running on 0.0.0.0:3000");
 });
-
