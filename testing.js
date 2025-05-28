@@ -54,7 +54,6 @@ const kataKotor = [
   "bangsat",
   "bgst",
   "bangs",
-  "asu",
   "ashu",
   "pepek",
   "ppk",
