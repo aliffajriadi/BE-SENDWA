@@ -383,15 +383,31 @@ async function startBot() {
 
     // Deteksi kata kotor
     if (kataKotor.some((kata) => pesan.includes(kata))) {
-      await sock.sendMessage(senderNumber, {
-        text: "sopan dikit boss",
-      });
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        {
+          text: `sopan dikit boss`,
+        },
+        { quoted: msg }
+      );
     } else if (simpleReplies[pesan]) {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
     } else if (pesan === ".menu" || pesan === "menu" || pesan === '".menu"') {
-      await sock.sendMessage(senderNumber, {
-        text: "Hallo silahkan pilih menu \n1. Website waifd.vercel.app \n2. Cek Jadwal (.jadwal) \n3. Cek Saran (.saran)\n4. Cek Yang Confess keKamu (.confess) \n5. Hapus Confess (.hapusconfess) \n6. Download Tiktok (.tiktok <link>)",
-      });
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: `🛠 *Menu Utama* 🛠
+
+Silakan pilih salah satu menu berikut:
+
+1️⃣ Website: *waifd.vercel.app*  
+2️⃣ Cek Jadwal: *.jadwal*  
+3️⃣ Cek Saran: *.saran*  
+4️⃣ Lihat Confess ke Kamu: *.confess*  
+5️⃣ Hapus Confess: *.hapusconfess*  
+6️⃣ Download TikTok: *.tiktok <link>*
+
+Ketik perintah sesuai format di atas.
+`,
+      }, {quoted: msg});
     } else if (jadwal[pesan]) {
       await sock.sendMessage(senderNumber, { text: jadwal[pesan] });
 
@@ -476,7 +492,7 @@ async function startBot() {
       const query = messageText.split(" ")[1];
       if (!query) {
         await sock.sendMessage(msg.key.remoteJid, {
-          text: "Contoh penggunaan: !tiktok https://vt.tiktok.com/xxxx",
+          text: "Contoh penggunaan: .tiktok https://vt.tiktok.com/xxxx",
         });
         return;
       }
@@ -514,7 +530,7 @@ async function startBot() {
         console.error("Gagal proses TikTok:", err.message);
         await sock.sendMessage(msg.key.remoteJid, {
           text: "Gagal mendownload video TikTok. Pastikan link valid dan coba lagi.",
-        });
+        }, {quoted: msg});
       }
 
       //DELETE CONFESS
