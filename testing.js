@@ -394,7 +394,7 @@ async function startBot() {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
     } else if (pesan === ".menu" || pesan === "menu" || pesan === '".menu"') {
       const [rows] = await pool.query(
-        "SELECT nama FROM users WHERE id_users = ?",
+        "SELECT nama FROM users WHERE id = ?",
         [senderNumber]
       );
 
