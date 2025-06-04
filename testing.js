@@ -393,8 +393,22 @@ async function startBot() {
     } else if (simpleReplies[pesan]) {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
     } else if (pesan === ".menu" || pesan === "menu" || pesan === '".menu"') {
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: `🛠 *Menu Utama* 🛠
+      const [rows] = await pool.query(
+        "SELECT nama FROM users WHERE id_users = ?",
+        [senderNumber]
+      );
+
+      // Cek apakah pengirim berasal dari grup IFD
+      const isGrupIFD =
+        senderNumber === "120363319945608143@g.us" ||
+        senderNumber === "120363324737971526@g.us";
+
+      // Jika user terdaftar di DB atau berasal dari grup IFD
+      if ((rows && rows.length > 0) || isGrupIFD) {
+        await sock.sendMessage(
+          msg.key.remoteJid,
+          {
+            text: `🛠 *Menu Utama* 🛠
 
 Silakan pilih salah satu menu berikut:
 
@@ -407,7 +421,28 @@ Silakan pilih salah satu menu berikut:
 
 Ketik perintah sesuai format di atas.
 `,
-      }, {quoted: msg});
+          },
+          { quoted: msg }
+        );
+      } else {
+        // Jika tidak terdaftar dan bukan dari grup IFD
+        await sock.sendMessage(
+          msg.key.remoteJid,
+          {
+            text: `🛠 *Menu Utama* 🛠
+
+Silakan pilih salah satu menu berikut:
+
+1️⃣ Website Confess: *waifd.vercel.app*  
+2️⃣ Website IFD Class: *ifdclass.vercel.app*
+6️⃣ Download TikTok: *.tiktok <link>*
+
+Ketik perintah sesuai format di atas.
+`,
+          },
+          { quoted: msg }
+        );
+      }
     } else if (jadwal[pesan]) {
       await sock.sendMessage(senderNumber, { text: jadwal[pesan] });
 
@@ -528,9 +563,13 @@ Ketik perintah sesuai format di atas.
         );
       } catch (err) {
         console.error("Gagal proses TikTok:", err.message);
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: "Gagal mendownload video TikTok. Pastikan link valid dan coba lagi.",
-        }, {quoted: msg});
+        await sock.sendMessage(
+          msg.key.remoteJid,
+          {
+            text: "Gagal mendownload video TikTok. Pastikan link valid dan coba lagi.",
+          },
+          { quoted: msg }
+        );
       }
 
       //DELETE CONFESS
