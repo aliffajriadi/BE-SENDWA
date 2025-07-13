@@ -95,6 +95,17 @@ async function startBot() {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
+  //GRUB
+  app.post("/api/grub", async (req, res) => {
+    const pesan = req.body.pesan;
+    const nomor = req.body.nomor;
+    try {
+      await sock.sendMessage(`${nomor}@g.us`, { text: pesan });
+      return res.status(200).json({ message: "Pesan berhasil dikirim" });
+    } catch (error) {
+      return res.status(500).json({ message: "Pesan gagal dikirim" });
+    }
+  });
 
   // API to get suggestions
   app.get("/api/saran", async (req, res) => {
