@@ -59,6 +59,7 @@ const simpleReplies = {
   "dc lee": "ayo aja gw mah 😁",
   "dc le": "ayo aja gw mah 😁",
   padim: "tekno le",
+  "tamor": "tamor trusss kuntulll"
 };
 const jadwal = {
   ".senin": `📌 *Senin - IF 2D*
