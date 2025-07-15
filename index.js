@@ -16,7 +16,10 @@ import { timeAgo } from "./func.js";
 import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
 import { kataKotor, jadwal, simpleReplies } from "./list.js";
+import { configDotenv } from "dotenv";
 
+
+configDotenv();
 // Try to import WebSocket if needed
 try {
   global.WebSocket = (await import("ws")).default;
@@ -29,10 +32,10 @@ app.use(express.json());
 
 // Configure MySQL connection pool
 const pool = createPool({
-  host: "localhost",
-  user: "root",
-  database: "waif",
-  password: "123Warna!",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -487,6 +490,6 @@ Ketik perintah sesuai format di atas.
 }
 
 await startBot();
-app.listen(3000, "0.0.0.0", () => {
-  console.log("Server running on 0.0.0.0:3000");
+app.listen(process.env.PORT, "0.0.0.0", () => {
+  console.log(`Server running on 0.0.0.0:${process.env.PORT}`);
 });

@@ -1,0 +1,21 @@
+# Ignore folder node_modules
+node_modules/
+
+# Ignore file .env (sangat penting!)
+.env
+
+
+auth/
+
+# Ignore log file
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore build output
+dist/
+build/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
