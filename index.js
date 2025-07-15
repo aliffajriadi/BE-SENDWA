@@ -514,6 +514,11 @@ Ketik perintah sesuai format di atas.
           text: "Contoh penggunaan: .ig https://www.instagram.com/reel/xxxx",
         });
       }
+      const [nameSender] = await pool.query(
+        "SELECT nama FROM users WHERE id = ?",
+        [senderNumber]
+      );
+      const namaUser = nameSender[0]?.nama ? `${nameSender[0].nama} 🥰` : "kak";
     
       try {
         const results = await instagramDl(query);
@@ -523,12 +528,12 @@ Ketik perintah sesuai format di atas.
     
         if (!videoLink) {
           return sock.sendMessage(msg.key.remoteJid, {
-            text: "❌ Tidak menemukan video untuk didownload.",
+            text: `${nameSender}, vidio nya ga ketemu ....`,
           });
         }
     
         await sock.sendMessage(msg.key.remoteJid, {
-          text: "⏳ Sedang mendownload video Instagram, tunggu sebentar...",
+          text: `sabar ya ${namaUser} ........`,
         });
     
         const response = await axios.get(videoLink, { responseType: "arraybuffer" });
