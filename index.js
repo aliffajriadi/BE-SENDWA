@@ -18,7 +18,6 @@ import axios from "axios";
 import { kataKotor, jadwal, simpleReplies } from "./list.js";
 import { configDotenv } from "dotenv";
 
-
 configDotenv();
 // Try to import WebSocket if needed
 try {
@@ -230,6 +229,16 @@ async function startBot() {
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages[0];
     if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
+    // Skip jika status atau tidak ada pesan
+    if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
+
+    // Cek jika pengirim adalah bot sendiri
+    if (msg.key.fromMe) return;
+
+    // Hindari duplikasi di grup: hanya tangani jika pengirimnya bukan sistem
+    if (msg.key.participant && msg.key.remoteJid.endsWith("@g.us")) {
+      if (msg.key.participant === sock.user.id) return;
+    }
 
     const senderNumber = msg.key.remoteJid;
     const messageType = Object.keys(msg.message)[0];
@@ -255,14 +264,15 @@ async function startBot() {
             {
               headers: {
                 Accept: "application/json, text/plain, */*",
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Content-Type":
+                  "application/x-www-form-urlencoded; charset=UTF-8",
                 Origin: "https://yt1s.io",
                 Referer: "https://yt1s.io/",
                 "User-Agent": "Mozilla/5.0 (compatible)",
               },
             }
           );
-    
+
           const $ = cheerio.load(data.data);
           const results = $("a.abutton.is-success.is-fullwidth.btn-premium")
             .map((_, el) => ({
@@ -270,7 +280,7 @@ async function startBot() {
               url: $(el).attr("href"),
             }))
             .get();
-    
+
           resolve(results);
         } catch (e) {
           console.error("yt1s error:", e.message);
@@ -449,7 +459,10 @@ Ketik perintah sesuai format di atas.
       });
 
       //TIKTOK HANDLER
-    } else if (messageText.startsWith(".tiktok") || messageText.startsWith(".tt")) {
+    } else if (
+      messageText.startsWith(".tiktok") ||
+      messageText.startsWith(".tt")
+    ) {
       const query = messageText.split(" ")[1];
       if (!query) {
         return sock.sendMessage(msg.key.remoteJid, {
@@ -507,7 +520,10 @@ Ketik perintah sesuai format di atas.
       }
 
       //INSTAGRAM
-    } else if (messageText.startsWith(".ig") || messageText.startsWith(".instagram")) {
+    } else if (
+      messageText.startsWith(".ig") ||
+      messageText.startsWith(".instagram")
+    ) {
       const query = messageText.split(" ")[1];
       if (!query) {
         return sock.sendMessage(msg.key.remoteJid, {
@@ -519,33 +535,37 @@ Ketik perintah sesuai format di atas.
         [senderNumber]
       );
       const namaUser = nameSender[0]?.nama ? `${nameSender[0].nama} 🥰` : "kak";
-    
+
       try {
         const results = await instagramDl(query);
-    
+
         // Cari link yang mengandung mp4 (video)
-        const videoLink = results.find((r) => r.title.toLowerCase().includes("video"))?.url;
-    
+        const videoLink = results.find((r) =>
+          r.title.toLowerCase().includes("video")
+        )?.url;
+
         if (!videoLink) {
           return sock.sendMessage(msg.key.remoteJid, {
             text: `${nameSender}, vidio nya ga ketemu ....`,
           });
         }
-    
+
         await sock.sendMessage(msg.key.remoteJid, {
           text: `sabar ya ${namaUser} ........`,
         });
-    
-        const response = await axios.get(videoLink, { responseType: "arraybuffer" });
+
+        const response = await axios.get(videoLink, {
+          responseType: "arraybuffer",
+        });
         const videoBuffer = Buffer.from(response.data);
-    
+
         // WhatsApp maksimal file 16MB
         if (videoBuffer.length > 16 * 1024 * 1024) {
           return sock.sendMessage(msg.key.remoteJid, {
             text: "❌ Ukuran video terlalu besar (>16MB), tidak bisa dikirim.",
           });
         }
-    
+
         await sock.sendMessage(
           msg.key.remoteJid,
           {
