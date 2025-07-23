@@ -19,17 +19,27 @@ import { kataKotor, jadwal, simpleReplies } from "./list.js";
 import { configDotenv } from "dotenv";
 
 configDotenv();
-// Try to import WebSocket if needed
+//WEBSOCKET NYA INI
 try {
   global.WebSocket = (await import("ws")).default;
 } catch {}
 
-// Initialize Express app
 const app = express();
 app.use(cors());
 app.use(express.json());
+// Middleware cek API Key
+app.use((req, res, next) => {
+  const apiKey = req.headers['x-api-key'];
 
-// Configure MySQL connection pool
+  if (!apiKey || apiKey !== process.env.API_KEY) {
+    return res.status(403).json({ error: 'masukkan api key yang valid!' });
+  }
+
+  next();
+});
+
+
+// SESUAIIN SAMA LOKAL NANTI
 const pool = createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -348,7 +358,7 @@ Silakan pilih salah satu menu berikut:
 
 1️⃣ Website: *waifd.vercel.app*  
 2️⃣ Cek Jadwal: *.jadwal*  
-3️⃣ Cek Saran: *.saran*  
+3️⃣ Cek Saran: *.saran*
 4️⃣ Lihat Confess ke Kamu: *.confess*  
 5️⃣ Hapus Confess: *.hapusconfess*  
 6️⃣ Download Vidio TikTok: *.tt <link>*
