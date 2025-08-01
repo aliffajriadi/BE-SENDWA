@@ -266,7 +266,7 @@ async function startBot() {
 
     // ✅ Anti-Spam Logic
     const now = Date.now();
-    const cooldown = 3000; // 3 detik
+    const cooldown = 5000; // 5 detik
 
     if (rateLimitMap.has(senderNumber)) {
       const lastTime = rateLimitMap.get(senderNumber);
