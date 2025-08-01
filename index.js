@@ -15,7 +15,7 @@ import { text } from "stream/consumers";
 import { timeAgo } from "./func.js";
 import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
-import { kataKotor, jadwal, simpleReplies } from "./list.js";
+import { kataKotor, jadwal, simpleReplies, panduan } from "./list.js";
 import { configDotenv } from "dotenv";
 
 configDotenv();
@@ -29,15 +29,14 @@ app.use(cors());
 app.use(express.json());
 // Middleware cek API Key
 app.use((req, res, next) => {
-  const apiKey = req.headers['x-api-key'];
+  const apiKey = req.headers["x-api-key"];
 
   if (!apiKey || apiKey !== process.env.API_KEY) {
-    return res.status(403).json({ error: 'masukkan api key yang valid!' });
+    return res.status(403).json({ error: "masukkan api key yang valid!" });
   }
 
   next();
 });
-
 
 // SESUAIIN SAMA LOKAL NANTI
 const pool = createPool({
@@ -260,6 +259,7 @@ async function startBot() {
     }
 
     console.log(`Pesan dari ${senderNumber}: ${messageText}`);
+
     const lowerText = messageText.toLowerCase();
     const pesan = lowerText;
 
@@ -609,6 +609,40 @@ Ketik perintah sesuai format di atas.
     } else if (messageText.toLowerCase().startsWith("echo ")) {
       const echo = messageText.slice(5);
       await sock.sendMessage(senderNumber, { text: echo });
+    } else if (messageText) {
+      const apiUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+      const requestBody = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `Kami memiliki 4 cabang lomba yakni maskot design, web design, network simulation, sysadmin. Berikut adalah panduan lomba dari maskot design:\n${panduan.mascot}\npanduan lomba network simulation: ${panduan.netsim}\npanduan lomba web design: ${panduan.webdesign}\npanduan lomba system administration: ${panduan.sysadmin}\n\nSebagai customer service, jawab pertanyaan ini:\n"${messageText}"`,
+              },
+            ],
+          },
+        ],
+      };
+
+      const config = {
+        headers: {
+          "x-goog-api-key": "AIzaSyBm0Dc96DExnMlYID8-JMdCYNgkgBmlPW4",
+          "Content-Type": "application/json",
+        },
+      };
+
+      let hasil = ""; // <- deklarasi di luar
+
+      try {
+        const response = await axios.post(apiUrl, requestBody, config);
+        hasil = response.data.candidates[0].content.parts[0].text;
+      } catch (error) {
+        console.error("Error saat memanggil API Gemini:", error.message);
+        hasil = "Maaf, terjadi kesalahan saat menjawab pertanyaan Anda.";
+      }
+
+      await sock.sendMessage(senderNumber, { text: hasil });
     }
   });
 }
