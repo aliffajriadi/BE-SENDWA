@@ -641,12 +641,12 @@ Ketik perintah sesuai format di atas.
 
       const config = {
         headers: {
-          "x-goog-api-key": "AIzaSyBm0Dc96DExnMlYID8-JMdCYNgkgBmlPW4",
+          "x-goog-api-key": process.env.API_AI,
           "Content-Type": "application/json",
         },
       };
 
-      let hasil = ""; // <- deklarasi di luar
+      let hasil = "";
 
       try {
         const response = await axios.post(apiUrl, requestBody, config);

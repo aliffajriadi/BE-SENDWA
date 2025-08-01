@@ -4,3 +4,4 @@ DB_USER=root
 DB_NAME=waif
 DB_PASS=
 API_KEY=
+API_AI=
