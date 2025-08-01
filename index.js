@@ -233,10 +233,11 @@ async function startBot() {
       }
     })();
   });
-
+  const rateLimitMap = new Map();
   // Handle incoming messages
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages[0];
+    if (!msg.message) return;
     if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
     // Skip jika status atau tidak ada pesan
     if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
@@ -262,6 +263,19 @@ async function startBot() {
 
     const lowerText = messageText.toLowerCase();
     const pesan = lowerText;
+
+    // ✅ Anti-Spam Logic
+    const now = Date.now();
+    const cooldown = 3000; // 3 detik
+
+    if (rateLimitMap.has(senderNumber)) {
+      const lastTime = rateLimitMap.get(senderNumber);
+      if (now - lastTime < cooldown) {
+        await sock.sendMessage(senderNumber, {text: "⏳ Tunggu beberapa detik sebelum mengirim pesan lagi."});
+        return;
+      }
+    }
+    rateLimitMap.set(senderNumber, now);
 
     //============================================================================================
     //INSTAGRAM DOWNLOADER
@@ -618,7 +632,7 @@ Ketik perintah sesuai format di atas.
           {
             parts: [
               {
-                text: `Kami memiliki 4 cabang lomba yakni maskot design, web design, network simulation, sysadmin. Berikut adalah panduan lomba dari maskot design:\n${panduan.mascot}\npanduan lomba network simulation: ${panduan.netsim}\npanduan lomba web design: ${panduan.webdesign}\npanduan lomba system administration: ${panduan.sysadmin}\n\nSebagai customer service, jawab pertanyaan ini:\n"${messageText}"`,
+                text: `Kami memiliki 4 cabang lomba yakni maskot design, web design, network simulation, sysadmin. Berikut adalah panduan lomba dari maskot design:\n${panduan.mascot}\npanduan lomba network simulation: ${panduan.netsim}\npanduan lomba web design: ${panduan.webdesign}\npanduan lomba system administration: ${panduan.sysadmin}\n\nSebagai customer service jangan halo terus dan rapikan teks nya sesuai styling whatsapp, jawab pertanyaan ini:\n"${messageText}"`,
               },
             ],
           },
@@ -638,11 +652,11 @@ Ketik perintah sesuai format di atas.
         const response = await axios.post(apiUrl, requestBody, config);
         hasil = response.data.candidates[0].content.parts[0].text;
       } catch (error) {
-        console.error("Error saat memanggil API Gemini:", error.message);
+        console.error("Error saat memanggil API: ", error.message);
         hasil = "Maaf, terjadi kesalahan saat menjawab pertanyaan Anda.";
       }
 
-      await sock.sendMessage(senderNumber, { text: hasil });
+      await sock.sendMessage(msg.key.remoteJid, { text: hasil }, {quoted: msg});
     }
   });
 }

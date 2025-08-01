@@ -128,7 +128,7 @@ B. Timeline
 C. Mekanisme Pendaftaran
 1. Periode pendaftaran OSC 2025 akan dibuka mulai tanggal 29 Juli – 4 Agustus 2025 pukul 23.59 WIB.
 2. Seluruh peserta wajib mengisi data diri secara lengkap pada formulir pendaftaran yang tersedia melalui link berikut: https://polibatam.id/osc2025.
-3. Tim yang telah melengkapi seluruh berkas pendaftaran akan melalui proses verifikasi oleh panitia dalam waktu maksimal 2x24 jam (2 hari kerja).
+3. Tim yang telah melengkapi seluruh berkas pendaftaran akan melalui proses verifikasi oleh panitia.
 4. Jika belum ada konfirmasi dalam waktu tersebut, peserta dapat menghubungi contact person atau menyampaikan kendala melalui grup WhatsApp resmi OSC 2025.
 
 D. Peraturan Lomba
