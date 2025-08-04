@@ -209,6 +209,8 @@ Peserta Wajib membayar 15K ,
 Pembayaran:
 082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
 
+Teknikal Meetting 
+Dilakukan pada tanggal 5 Agustus 2025, pada jam 20.30 WIB
 `,
   netsim: `2 | Network Simulation
 
@@ -326,6 +328,9 @@ J. Biaya Lomba
 Peserta Wajib membayar 15K ,
 Pembayaran:
 082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
+
+Teknikal Meetting 
+Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB
 `,
   webdesign: `Web Design
 
@@ -397,7 +402,10 @@ G. Contact Person
 Biaya Lomba
 Peserta Wajib membayar 15K ,
 Pembayaran:
-082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)`,
+082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
+
+Teknikal Meetting 
+Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB`,
   sysadmin: `Linux System Administration
 
 A. Deskripsi Lomba
@@ -586,6 +594,12 @@ Biaya Lomba
 Peserta Wajib membayar 15K ,
 Pembayaran:
 082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
+
+Teknikal Meetting 
+Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB
+
+Ketua Pelaksana seluruh lomba:
+Alif Fajriadi (0895603792033)
 `
 }
 
