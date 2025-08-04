@@ -330,7 +330,7 @@ Pembayaran:
 082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
 
 Teknikal Meetting 
-Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB
+Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB, Zoom
 `,
   webdesign: `Web Design
 
@@ -405,7 +405,7 @@ Pembayaran:
 082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
 
 Teknikal Meetting 
-Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB`,
+Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB, Zoom`,
   sysadmin: `Linux System Administration
 
 A. Deskripsi Lomba
@@ -596,7 +596,7 @@ Pembayaran:
 082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
 
 Teknikal Meetting 
-Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB
+Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB, Zoom
 
 Ketua Pelaksana seluruh lomba:
 Alif Fajriadi (0895603792033)
