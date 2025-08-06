@@ -211,6 +211,44 @@ Pembayaran:
 
 Teknikal Meetting 
 Dilakukan pada tanggal 5 Agustus 2025, pada jam 20.30 WIB
+
+Hasil RANGKUMAN TECHNICAL MEETING LOMBA OSC MASCOT DESIGN 2025
+Tema: Open Source Arena: Battle of Briliant Mind 🧠
+Bentuk mascot: WAJIB Penguin 🐧
+
+Format Upload Lomba OSC Kategori Mascot Design
+
+Pengumpulan Pertama format Zip:
+1. File Gambar , Dengan Format .PNG
+2. File mentahan , (Coreldraw - .CDR, Adobe Ilustrator - .AI, Canva - Link Design)
+3. Penjelasan Filosofi,  Dengan Format .PDF dan colour palette
+ 
+Pengumpulan kedua:
+1. Ppt tentang presentasi mascot, dalam format .PDF. Isi dari ppt sesuai dengan guidebook. juga sekreatif dari peserta masing².
+
+Catatan: Pada file .PDF ppt dan .PDF Fisolofi. Wajib menyertakan logo Polibatam, BLUG, Open source & OSC 2025
+
+Timeline pembuatan karya:
+🗓 : 5 - 14 Agustus
+
+Deadline (link pengumpulan akan di share h-2 sebelum deadline)
+🕠 : 14 Agustus 23:59 WIB 
+
+Upload karya di Instagram. 
+Slide 1: Tampilan Mascot
+Slide 2: Fisolofi Mascot
+📝: 15 - 16 Agustus 23:59
+
+Caption berisi deskripsi konsep desain. Wajib tag @batamlinux
+Gunakan hashtag
+#OSC2025 #DesainMaskotOSC2025 #BLUG #BatamLinux #Indonesia #GoOpenSource
+Berikut Untuk Asset Logo PNG yang diperlukan :
+1. Logo Polibatam
+2. Logo Batam Linux User Group
+3. Logo Opensource
+4. Logo OSC 2025
+
+untuk link logo silahkan cek grub resmi
 `,
   netsim: `2 | Network Simulation
 
