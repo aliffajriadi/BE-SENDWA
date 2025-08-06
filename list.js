@@ -59,7 +59,7 @@ const simpleReplies = {
   "dc lee": "ayo aja gw mah 😁",
   "dc le": "ayo aja gw mah 😁",
   padim: "tekno le",
-  "tamor": "tamor trusss kuntulll"
+  tamor: "tamor trusss kuntulll",
 };
 const jadwal = {
   ".senin": `📌 *Senin - IF 2D*
@@ -109,8 +109,6 @@ const jadwal = {
   🕘 14.‌30 sd 17.‌00`,
 };
 
-
-
 // OSC 2025 ================================================================================
 const panduan = {
   mascot: `2 | Mascot Design
@@ -118,137 +116,70 @@ const panduan = {
 A. Deskripsi Lomba
 Lomba Desain Maskot merupakan salah satu cabang kompetisi dalam rangkaian Open Source Competition (OSC) 2025, yang berfokus pada tantangan kreativitas individu dalam menciptakan karakter maskot yang orisinal dan menarik. Maskot yang dibuat diharapkan mampu merepresentasikan semangat, nilai-nilai, atau karakter dari dunia open source maupun komunitas teknologi secara visual. Lomba ini terbuka untuk umum dan dapat diikuti oleh siapa saja yang memiliki ketertarikan di bidang desain grafis.
 
-B. Timeline
-• Pendaftaran: 29 Juli – 4 Agustus 2025
-• Technical Meeting: 5 Agustus 2025
-• Pengerjaan dan Deadline Submit Design: 5 - 14 Agustus 2025
-• Upload Instagram: 15 - 16 Agustus 2025
-• Presentasi Hasil Design: 17 Agustus 2025
+MASCOT DESIGN
+Tema: Open Source Arena: Battle of Brilliant Mind
+Bentuk Maskot: Wajib Penguin 🐧
+Peserta: Individu, terbuka untuk umum
+Biaya: Rp15.000 ke 082287690013 a.n Naylah Amirah Az Zikra
+Timeline:
 
-C. Mekanisme Pendaftaran
-1. Periode pendaftaran OSC 2025 akan dibuka mulai tanggal 29 Juli – 4 Agustus 2025 pukul 23.59 WIB.
-2. Seluruh peserta wajib mengisi data diri secara lengkap pada formulir pendaftaran yang tersedia melalui link berikut: https://polibatam.id/osc2025.
-3. Tim yang telah melengkapi seluruh berkas pendaftaran akan melalui proses verifikasi oleh panitia.
-4. Jika belum ada konfirmasi dalam waktu tersebut, peserta dapat menghubungi contact person atau menyampaikan kendala melalui grup WhatsApp resmi OSC 2025.
+Pendaftaran: 29 Jul – 4 Agt 2025
 
-D. Peraturan Lomba
-1. Peserta merupakan individu (1 orang) dan terbuka untuk umum.
-2. Wajib mendaftar sesuai jadwal yang ditentukan.
-3. Wajib mengikuti Technical Meeting (tema lomba diumumkan saat TM).
-4. Wajib bergabung di grup WhatsApp resmi (tautan tersedia di formulir pendaftaran).
-5. Wajib mengikuti akun Instagram @batamlinux.
-6. Karya tidak mengandung unsur SARA, pornografi, politik, kekerasan, atau provokasi.
-7. Karya harus orisinal, belum pernah dipublikasikan atau diikutkan lomba lain.
-8. Bebas menggunakan aplikasi desain apapun.
-9. Setiap peserta hanya boleh mengirimkan satu karya.
-10. Hak cipta atas karya yang dikumpulkan menjadi milik penuh panitia (BLUG).
-11. Keputusan juri bersifat mutlak dan tidak dapat diganggu gugat.
+TM (tema diumumkan): 5 Agt (20.30 WIB, Online)
 
-E. Mekanisme Perlombaan
-1. Tema diumumkan saat Technical Meeting pada tanggal 5 Agustus 2025.
-2. Pengerjaan desain berlangsung selama 8 hari dari tanggal 6 Agustus – 14 Agustus 2025.
-3. Desain harus diunggah ke Instagram peserta dan dikirim ke link pengumpulan (dibagikan saat Technical Meeting).
-4. Waktu upload Instagram mulai dari tanggal 15 dan berakhir pada tanggal 16 Agustus 2025 pukul 23.59 WIB.
-5. Presentasi offline diadakan pada 17 Agustus 2025 menggunakan file PPT.
+Pengerjaan: 5 – 14 Agt
 
-F. Format Pengiriman
-A. Format File Desain
-• File PNG
-Format nama : namapeserta.png (Contoh: kamisatoayato.png)
-• File PDF (penjelasan tentang desain)
-Format nama : namapeserta.pdf (Contoh: kamisatoayato.pdf)
-• File Mentah (Raw)
-Format asli sesuai software (.ai, .cdr, .eps, dll)
+Upload IG: 15 – 16 Agt
 
-B. Ketentuan Isi PDF
-• Gambar desain maskot di bagian atas
-• Penjelasan konsep (maks. 150 kata)
-• Format A4, font Arial, spasi 1.5
+Presentasi Offline: 17 Agt
 
-C. Format ZIP
-• Nama: namapeserta.zip
-• Contoh: kamisatoayato.zip
-• Deadline: 14 Agustus 2025, pukul 23.59 WIB
+Format Pengumpulan (ZIP):
 
-G. Ketentuan Upload Instagram
-• Tanggal Upload dimulai dari tanggal 15 – 16 Agustus 2025 (maks. pukul 23.59 WIB)
-• Wajib tag @batamlinux
-• Caption berisi deskripsi konsep desain
-• Gunakan hashtag: #OSC2025 #DesainMaskotOSC2025 #BLUG #BatamLinux #Indonesia #GoOpenSource
-• Akun tidak boleh di-private
+namapeserta.png (maskot)
 
-H. Ketentuan Presentasi Offline
-A. Format PPT (3–6 Slide)
-• Slide 1: Judul + Nama Peserta + Judul Maskot
-• Slide 2: Tampilan Desain (boleh PNG full)
-• Slide 3: Penjelasan Konsep
-• Slide 4–6 (opsional): Detail tambahan seperti warna, simbol, gaya, inspirasi
+namapeserta.pdf (filosofi desain, max 150 kata, A4, Arial, 1.5 spasi)
 
-B. Pengumpulan PPT
-• Dikirim terpisah (tidak perlu dimasukkan ZIP)
-• Upload ke Google Drive (link disediakan saat TM)
-• Pastikan akses: Anyone with the link can view
+File mentah (.ai/.cdr/link Canva)
 
-I. Pelaksanaan Lomba
-• Technical Meeting: Online, 5 Agustus 2025
-• Tahap Desain: Online, 6 – 14 Agustus 2025
-• Presentasi: Offline, 17 Agustus 2025
+Wajib sertakan logo: Polibatam, BLUG, OSC, Open Source (cek grup WA)
 
-J. Kriteria Penilaian
-1. Kesesuaian dengan Tema
-2. Orisinalitas
-3. Konsep desain
-4. Estetika dan kreativitas
+Upload Instagram:
 
-K. Contact Person
-1. Miftahur Rahmah (+62 857-6354-2044)
-2. Ibnu (+62 896-2325-6645)
+Tanggal: 15–16 Agt (max 23:59 WIB)
 
-J. Biaya Lomba
-Peserta Wajib membayar 15K ,
-Pembayaran:
-082287690013 a.s NAYLAH AMIRAH AZ ZIKRA (Dana)
+Slide 1: Tampilan maskot
 
-Teknikal Meetting 
-Dilakukan pada tanggal 5 Agustus 2025, pada jam 20.30 WIB
+Slide 2: Filosofi maskot
 
-Hasil RANGKUMAN TECHNICAL MEETING LOMBA OSC MASCOT DESIGN 2025
-Tema: Open Source Arena: Battle of Briliant Mind 🧠
-Bentuk mascot: WAJIB Penguin 🐧
+Tag: @batamlinux
 
-Format Upload Lomba OSC Kategori Mascot Design
+Hashtag: #OSC2025 #DesainMaskotOSC2025 #BLUG #BatamLinux #Indonesia #GoOpenSource
 
-Pengumpulan Pertama format Zip:
-1. File Gambar , Dengan Format .PNG
-2. File mentahan , (Coreldraw - .CDR, Adobe Ilustrator - .AI, Canva - Link Design)
-3. Penjelasan Filosofi,  Dengan Format .PDF dan colour palette
- 
-Pengumpulan kedua:
-1. Ppt tentang presentasi mascot, dalam format .PDF. Isi dari ppt sesuai dengan guidebook. juga sekreatif dari peserta masing².
+Akun tidak boleh di-private
 
-Catatan: Pada file .PDF ppt dan .PDF Fisolofi. Wajib menyertakan logo Polibatam, BLUG, Open source & OSC 2025
+Presentasi PPT:
 
-Timeline pembuatan karya:
-🗓 : 5 - 14 Agustus
+Format: 3–6 slide PDF, terpisah dari ZIP
 
-Deadline (link pengumpulan akan di share h-2 sebelum deadline)
-🕠 : 14 Agustus 23:59 WIB 
+Slide 1: Judul + Nama + Judul Maskot
 
-Upload karya di Instagram. 
-Slide 1: Tampilan Mascot
-Slide 2: Fisolofi Mascot
-📝: 15 - 16 Agustus 23:59
+Slide 2: Tampilan Maskot
 
-Caption berisi deskripsi konsep desain. Wajib tag @batamlinux
-Gunakan hashtag
-#OSC2025 #DesainMaskotOSC2025 #BLUG #BatamLinux #Indonesia #GoOpenSource
-Berikut Untuk Asset Logo PNG yang diperlukan :
-1. Logo Polibatam
-2. Logo Batam Linux User Group
-3. Logo Opensource
-4. Logo OSC 2025
+Slide 3: Penjelasan Konsep
 
-untuk link logo silahkan cek grub resmi
+Slide 4–6 (opsional): Warna, simbol, inspirasi
+
+Upload via GDrive (link saat TM), pastikan "Anyone can view"
+
+Penilaian:
+
+Kesesuaian Tema
+
+Orisinalitas
+
+Konsep
+
+Estetika & Kreativitas
 `,
   netsim: `2 | Network Simulation
 
@@ -638,8 +569,7 @@ Dilakukan pada tanggal 13 Agustus 2025, pada jam 19.00 WIB, Zoom
 
 Ketua Pelaksana seluruh lomba:
 Alif Fajriadi (0895603792033)
-`
-}
+`,
+};
 
-
-export { kataKotor, jadwal, simpleReplies, panduan }
+export { kataKotor, jadwal, simpleReplies, panduan };
