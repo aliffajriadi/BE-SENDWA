@@ -420,6 +420,7 @@ ${panduan.sysadmin}
 3. Format teks rapi seperti percakapan WhatsApp:
    - Gunakan emoji yang relevan.
    - Gunakan *bold* untuk penekanan.
+   - Rapikan dari list tab / space sesuai dengan styling text di whatsapp
    - Gunakan bullet/nomor untuk daftar.
 4. Jawab ringkas, jelas, dan to the point.
 5. Jangan awali dengan kata "Halo" atau sapaan berulang jika tidak perlu.
