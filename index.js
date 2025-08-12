@@ -11,11 +11,9 @@ import {
 import { Boom } from "@hapi/boom";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
-import { text } from "stream/consumers";
-import { timeAgo } from "./func.js";
 import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
-import { kataKotor, jadwal, simpleReplies, panduan } from "./list.js";
+import { kataKotor, simpleReplies, panduan } from "./list.js";
 import { configDotenv } from "dotenv";
 
 configDotenv();
@@ -39,15 +37,15 @@ app.use((req, res, next) => {
 });
 
 // SESUAIIN SAMA LOKAL NANTI
-const pool = createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+// const pool = createPool({
+//   host: process.env.DB_HOST,
+//   user: process.env.DB_USER,
+//   database: process.env.DB_NAME,
+//   password: process.env.DB_PASS,
+//   waitForConnections: true,
+//   connectionLimit: 10,
+//   queueLimit: 0,
+// });
 
 // Function to start the WhatsApp bot
 async function startBot() {
@@ -118,85 +116,6 @@ async function startBot() {
     }
   });
 
-  // API to get suggestions
-  app.get("/api/saran", async (req, res) => {
-    try {
-      const [rows] = await pool.query(
-        "SELECT * FROM saran ORDER BY dibuat DESC LIMIT 15"
-      );
-      const [countTotalConfess] = await pool.query(
-        "SELECT COUNT(*) AS totalConfess FROM confess"
-      );
-      const countConfessTotal = countTotalConfess[0].totalConfess;
-      const [countsaran] = await pool.query("SELECT COUNT(*) FROM saran");
-      const countTotalSaran = countsaran[0]["COUNT(*)"];
-      return res.status(200).json({ rows, countTotalSaran, countConfessTotal });
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  });
-
-  // API SEND CONFESS
-  app.post("/api/confess", async (req, res) => {
-    const userid = req.body.id_users;
-    const pesan = req.body.pesan;
-    const dibuat = req.body.dibuat;
-    const lowerText = pesan.toLowerCase();
-    const katakata = lowerText;
-    if (kataKotor.some((kata) => katakata.includes(kata))) {
-      return res.status(403).json({
-        message:
-          "Gagal Mengirim Confess, Otomatis MenDeteksi Analisa Sentimen -1 / Negatif dan mengujar Kebencian",
-      });
-    }
-    try {
-      const [rows] = await pool.query("SELECT nama FROM users WHERE id = ?", [
-        userid,
-      ]);
-      const nama = rows[0].nama;
-      await sock.sendMessage(userid, {
-        text: `Hallo ${nama}👋, ada yang confess nihh:\n \n${pesan}`,
-      });
-      await pool.query(
-        "INSERT INTO confess (id_users, pesan, dibuat) VALUES (?, ?, ?)",
-        [userid, pesan, dibuat]
-      );
-      return res
-        .status(200)
-        .json({ message: `Confess Berhasil Dikirim Ke WhatsApp ${nama}` });
-    } catch (error) {
-      console.error("error fetch confess");
-      return res.status(500).json({ message: "Internal Server Eror" });
-    }
-  });
-
-  // API to submit suggestions
-  app.post("/api/kirimsaran", async (req, res) => {
-    const nama = req.body.nama;
-    const no_wa = req.body.no_wa;
-    const pesan = req.body.pesan;
-    try {
-      await pool.query(
-        "INSERT INTO saran (nama, no_wa, pesan) VALUES (?, ?, ?)",
-        [nama, no_wa, pesan]
-      );
-      return res
-        .status(200)
-        .json({ message: `Terimakasih ${nama} atas saran dan masukkannya` });
-    } catch (error) {
-      return res.status(500).json({ message: "Gagal Menambahkan Saran" });
-    }
-  });
-
-  // Test API
-  app.get("/api/test", async (req, res) => {
-    try {
-      return res.status(200).json({ message: "Online" });
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
-  });
 
   // API for group broadcast
   app.post("/api/broadcast", (req, res) => {
@@ -351,136 +270,6 @@ async function startBot() {
       );
     } else if (simpleReplies[pesan]) {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
-    } else if (pesan === ".menu" || pesan === "menu" || pesan === '".menu"') {
-      const [rows] = await pool.query("SELECT nama FROM users WHERE id = ?", [
-        senderNumber,
-      ]);
-
-      // Cek apakah pengirim berasal dari grup IFD
-      const isGrupIFD =
-        senderNumber === "120363319945608143@g.us" ||
-        senderNumber === "120363324737971526@g.us";
-
-      // Jika user terdaftar di DB atau berasal dari grup IFD
-      if ((rows && rows.length > 0) || isGrupIFD) {
-        await sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text: `🛠 *Menu Utama* 🛠
-
-Silakan pilih salah satu menu berikut:
-
-1️⃣ Website: *waifd.vercel.app*  
-2️⃣ Cek Jadwal: *.jadwal*  
-3️⃣ Cek Saran: *.saran*
-4️⃣ Lihat Confess ke Kamu: *.confess*  
-5️⃣ Hapus Confess: *.hapusconfess*  
-6️⃣ Download Vidio TikTok: *.tt <link>*
-6️⃣ Download Vidio Instagram: *.ig <link>*
-
-Ketik perintah sesuai format di atas.
-`,
-          },
-          { quoted: msg }
-        );
-      } else {
-        // Jika tidak terdaftar dan bukan dari grup IFD
-        await sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            text: `🛠 *Menu Utama* 🛠
-
-Silakan pilih salah satu menu berikut:
-
-1️⃣ Website Confess: *waifd.vercel.app*  
-2️⃣ Website IFD Class: *ifdclass.vercel.app*
-6️⃣ Download Vidio TikTok: *.tt <link>*
-6️⃣ Download Reels Instagram: *.ig <link>*
-
-Ketik perintah sesuai format di atas.
-`,
-          },
-          { quoted: msg }
-        );
-      }
-    } else if (jadwal[pesan]) {
-      await sock.sendMessage(senderNumber, { text: jadwal[pesan] });
-
-      //CEK CONFESS VIA WHATSAPP
-    } else if (pesan === ".confess") {
-      try {
-        const [rows] = await pool.query(
-          "SELECT pesan, dibuat FROM confess WHERE id_users = ? ORDER BY dibuat DESC LIMIT 10",
-          [senderNumber]
-        );
-        const [countConfess] = await pool.query(
-          "SELECT COUNT(*) AS banyak FROM confess WHERE id_users = ?",
-          [senderNumber]
-        );
-        const countku = countConfess[0].banyak;
-
-        if (rows.length === 0) {
-          await sock.sendMessage(senderNumber, {
-            text: "Yahhh belum ada yang confess ke kamu 😌\n\nyuk kirim link ini ke teman teman kmu: waifd.vercel.app",
-          });
-          return;
-        }
-
-        let responsePesan = "Daftar pesan yang confess ke kamu😁: \n\n";
-        for (const [index, row] of rows.entries()) {
-          const waktuDibuat = await timeAgo(row.dibuat); // Menunggu hasil dari Promise timeAgo
-          responsePesan += `Confess ${index + 1}.`;
-          responsePesan += `${waktuDibuat}\n`;
-          responsePesan += `Pesan:\n${row.pesan}\n\n\n`;
-        }
-        responsePesan += `Total Seluruh yang Confess ke Kamu: *${countku}*/10`;
-        responsePesan += `Ketik ".menu" untuk menggunakan BOT`;
-
-        await sock.sendMessage(senderNumber, { text: responsePesan });
-      } catch (error) {
-        await sock.sendMessage(senderNumber, {
-          text: "Gagal Mengambil data, Silahkan Contact ke developer",
-        });
-      }
-      //END CEK CONFESS
-    } else if (pesan === ".saran") {
-      try {
-        const [rows] = await pool.query(
-          "SELECT * FROM saran ORDER BY dibuat DESC LIMIT 5"
-        );
-        const [totalSaran] = await pool.query("SELECT COUNT(*) FROM saran");
-
-        if (rows.length === 0) {
-          await sock.sendMessage(senderNumber, {
-            text: "Tidak ada saran yang ditemukan.",
-          });
-          return;
-        }
-
-        let responseMessage = "Daftar Saran:\n\n";
-        rows.forEach((row, index) => {
-          responseMessage += `Saran ${index + 1}:\n`;
-          responseMessage += `Nama: ${row.nama}\n`;
-          responseMessage += `No WA: ${row.no_wa}\n`;
-          responseMessage += `Pesan: ${row.pesan}\n`;
-          responseMessage += `Dibuat: ${new Date(
-            row.dibuat
-          ).toLocaleString()}\n\n`;
-        });
-        const count = totalSaran[0]["COUNT(*)"];
-        responseMessage += `Total Saran : *${count}*`;
-
-        await sock.sendMessage(senderNumber, { text: responseMessage });
-      } catch (error) {
-        console.log(error);
-        await sock.sendMessage(senderNumber, {
-          text: "Terjadi kesalahan saat mengambil data saran.",
-        });
-      }
-    } else if (pesan === ".jadwal") {
-      await sock.sendMessage(senderNumber, {
-        text: "Pilih Hari \n .senin \n .selasa \n .rabu \n .kamis \n .jumaat",
-      });
 
       //TIKTOK HANDLER
     } else if (
@@ -493,11 +282,7 @@ Ketik perintah sesuai format di atas.
           text: "Contoh penggunaan: .tiktok https://vt.tiktok.com/xxxx",
         });
       }
-      const [nameSender] = await pool.query(
-        "SELECT nama FROM users WHERE id = ?",
-        [senderNumber]
-      );
-      const namaUser = nameSender[0]?.nama ? `${nameSender[0].nama} 🥰` : "kak";
+      const namaUser = "kak";
 
       try {
         const data = await tiktokApi.download(query);
@@ -554,11 +339,7 @@ Ketik perintah sesuai format di atas.
           text: "Contoh penggunaan: .ig https://www.instagram.com/reel/xxxx",
         });
       }
-      const [nameSender] = await pool.query(
-        "SELECT nama FROM users WHERE id = ?",
-        [senderNumber]
-      );
-      const namaUser = nameSender[0]?.nama ? `${nameSender[0].nama} 🥰` : "kak";
+      const namaUser = "kak";
 
       try {
         const results = await instagramDl(query);
@@ -603,21 +384,6 @@ Ketik perintah sesuai format di atas.
         console.error("Gagal download Instagram:", e.message);
         await sock.sendMessage(msg.key.remoteJid, {
           text: "❌ Gagal mengambil video dari Instagram. Coba lagi nanti.",
-        });
-      }
-
-      //DELETE CONFESS
-    } else if (pesan === ".hapusconfess") {
-      try {
-        await pool.query("DELETE FROM confess WHERE id_users = ?", [
-          senderNumber,
-        ]);
-        await sock.sendMessage(senderNumber, {
-          text: "✅ Berhasil Mnghapus Seluruh Confess mu",
-        });
-      } catch (error) {
-        await sock.sendMessage(senderNumber, {
-          text: "❌ Gagal Menghapus, Tolong hubungi developer",
         });
       }
     } else if (messageText.toLowerCase().startsWith("echo ")) {
