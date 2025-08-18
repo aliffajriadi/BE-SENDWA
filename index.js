@@ -116,7 +116,6 @@ async function startBot() {
     }
   });
 
-
   // API for group broadcast
   app.post("/api/broadcast", (req, res) => {
     const groupId = req.body.tujuan;
@@ -190,7 +189,9 @@ async function startBot() {
     if (rateLimitMap.has(senderNumber)) {
       const lastTime = rateLimitMap.get(senderNumber);
       if (now - lastTime < cooldown) {
-        await sock.sendMessage(senderNumber, {text: "⏳ Tunggu beberapa detik sebelum mengirim pesan lagi."});
+        await sock.sendMessage(senderNumber, {
+          text: "⏳ Tunggu beberapa detik sebelum mengirim pesan lagi.",
+        });
         return;
       }
     }
@@ -389,70 +390,132 @@ async function startBot() {
     } else if (messageText.toLowerCase().startsWith("echo ")) {
       const echo = messageText.slice(5);
       await sock.sendMessage(senderNumber, { text: echo });
-    } else if (messageText) {
-      const apiUrl =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    }
+    //     else if (messageText) {
+    //       const apiUrl =
+    //         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-      const requestBody = {
-        contents: [
-          {
-            parts: [
-              {
-                text: `
-Anda adalah customer service resmi lomba OSC 2025.
-Gunakan data berikut sebagai satu-satunya sumber jawaban:
+    //       const requestBody = {
+    //         contents: [
+    //           {
+    //             parts: [
+    //               {
+    //                 text: `
+    // Anda adalah customer service resmi lomba OSC 2025.
+    // Gunakan data berikut sebagai satu-satunya sumber jawaban:
 
-📄 Panduan & rangkuman teknikal meeting lomba Mascot Design:
-${panduan.mascot}
+    // 📄 Panduan & rangkuman teknikal meeting lomba Mascot Design:
+    // ${panduan.mascot}
 
-📄 Panduan lomba Network Simulation:
-${panduan.netsim}
+    // 📄 Panduan lomba Network Simulation:
+    // ${panduan.netsim}
 
-📄 Panduan lomba Web Design:
-${panduan.webdesign}
+    // 📄 Panduan lomba Web Design:
+    // ${panduan.webdesign}
 
-📄 Panduan lomba System Administration:
-${panduan.sysadmin}
+    // 📄 Panduan lomba System Administration:
+    // ${panduan.sysadmin}
 
-⚠️ Aturan Menjawab:
-1. Jawab hanya berdasarkan panduan di atas, tanpa menambah atau mengubah fakta.
-2. Gunakan bahasa Indonesia yang sopan dan profesional ala CS.
-3. Format teks rapi seperti percakapan WhatsApp:
-   - Gunakan emoji yang relevan.
-   - Gunakan *bold* untuk penekanan.
-   - Rapikan dari list tab / space sesuai dengan styling text di whatsapp
-   - Gunakan bullet/nomor untuk daftar.
-4. Jawab ringkas, jelas, dan to the point.
-5. Jangan awali dengan kata "Halo" atau sapaan berulang jika tidak perlu.
-6. Jika informasi tidak ada di panduan, jawab: "Mohon maaf, informasi tersebut tidak tersedia di panduan kami."
+    // ⚠️ Aturan Menjawab:
+    // 1. Jawab hanya berdasarkan panduan di atas, tanpa menambah atau mengubah fakta.
+    // 2. Gunakan bahasa Indonesia yang sopan dan profesional ala CS.
+    // 3. Format teks rapi seperti percakapan WhatsApp:
+    //    - Gunakan emoji yang relevan.
+    //    - Gunakan *bold* untuk penekanan.
+    //    - Rapikan dari list tab / space sesuai dengan styling text di whatsapp
+    //    - Gunakan bullet/nomor untuk daftar.
+    // 4. Jawab ringkas, jelas, dan to the point.
+    // 5. Jangan awali dengan kata "Halo" atau sapaan berulang jika tidak perlu.
+    // 6. Jika informasi tidak ada di panduan, jawab: "Mohon maaf, informasi tersebut tidak tersedia di panduan kami."
 
-Sekarang jawab pertanyaan ini sebagai CS:
-"${messageText}"
-`,
-              },
-            ],
-          },
-        ],
-      };
+    // Sekarang jawab pertanyaan ini sebagai CS:
+    // "${messageText}"
+    // `,
+    //               },
+    //             ],
+    //           },
+    //         ],
+    //       };
 
-      const config = {
-        headers: {
-          "x-goog-api-key": process.env.API_AI,
-          "Content-Type": "application/json",
-        },
-      };
+    //       const config = {
+    //         headers: {
+    //           "x-goog-api-key": process.env.API_AI,
+    //           "Content-Type": "application/json",
+    //         },
+    //       };
 
-      let hasil = "";
+    //       let hasil = "";
+
+    //       try {
+    //         const response = await axios.post(apiUrl, requestBody, config);
+    //         hasil = response.data.candidates[0].content.parts[0].text;
+    //       } catch (error) {
+    //         console.error("Error saat memanggil API: ", error.message);
+    //         hasil = "Maaf, terjadi kesalahan saat menjawab pertanyaan Anda.";
+    //       }
+
+    //       await sock.sendMessage(msg.key.remoteJid, { text: hasil }, {quoted: msg});
+    //     }
+    else if (messageText) {
+      const senderNumber = msg.key.remoteJid.replace("@s.whatsapp.net", "");
 
       try {
-        const response = await axios.post(apiUrl, requestBody, config);
-        hasil = response.data.candidates[0].content.parts[0].text;
-      } catch (error) {
-        console.error("Error saat memanggil API: ", error.message);
-        hasil = "Maaf, terjadi kesalahan saat menjawab pertanyaan Anda.";
-      }
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/botwa",
+          {
+            message: messageText,
+            number_telp: senderNumber,
+          },
+          {
+            headers: {
+              "X-API-KEY": process.env.API_SCHEDU_WA_AI,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      await sock.sendMessage(msg.key.remoteJid, { text: hasil }, {quoted: msg});
+        const res = response.data;
+
+        // Action handler sesuai balasan Laravel
+        if (res.action === "answer_only") {
+          return await sock.sendMessage(
+            msg.key.remoteJid,
+            { text: res.message },
+            { quoted: msg }
+          );
+        } else if (res.action === "create_task") {
+          return await sock.sendMessage(
+            msg.key.remoteJid,
+            { text: `✅ Tugas berhasil dibuat: ${res.title}` },
+            { quoted: msg }
+          );
+        } else if (res.action === "create_note") {
+          return await sock.sendMessage(
+            msg.key.remoteJid,
+            { text: `📝 Catatan berhasil disimpan: ${res.title}` },
+            { quoted: msg }
+          );
+        } else if (res.action === "create_schedule") {
+          return await sock.sendMessage(
+            msg.key.remoteJid,
+            { text: `📅 Jadwal dibuat: ${res.title}` },
+            { quoted: msg }
+          );
+        } else {
+          return await sock.sendMessage(
+            msg.key.remoteJid,
+            { text: "⚠️ Perintah tidak dikenali" },
+            { quoted: msg }
+          );
+        }
+      } catch (error) {
+        console.error("Error kirim request:", error.message);
+        await sock.sendMessage(
+          msg.key.remoteJid,
+          { text: "🚨 Terjadi error saat memproses pesan" },
+          { quoted: msg }
+        );
+      }
     }
   });
 }
