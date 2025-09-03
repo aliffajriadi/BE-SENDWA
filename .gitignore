@@ -22,4 +22,5 @@ Thumbs.db
 
 .nodemonignore
 nodemon.json
+data.json
 

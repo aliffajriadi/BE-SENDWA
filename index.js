@@ -15,6 +15,7 @@ import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
 import { kataKotor, simpleReplies, panduan } from "./list.js";
 import { configDotenv } from "dotenv";
+import { getName, registerNumber } from "./func.js";
 
 configDotenv();
 //WEBSOCKET NYA INI
@@ -258,6 +259,7 @@ async function startBot() {
       },
     };
 
+    
     //===================================================================
 
     // Deteksi kata kotor
@@ -277,13 +279,21 @@ async function startBot() {
       messageText.startsWith(".tiktok") ||
       messageText.startsWith(".tt")
     ) {
+      const namaUser = await getName(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      if (!namaUser) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Nomor kamu belum terdaftar. Kirim pesan dengan format:\n\n.daftar NAMA_LENGKAP`,
+        });
+      }
       const query = messageText.split(" ")[1];
       if (!query) {
         return sock.sendMessage(msg.key.remoteJid, {
           text: "Contoh penggunaan: .tiktok https://vt.tiktok.com/xxxx",
         });
       }
-      const namaUser = "kak";
+     
 
       try {
         const data = await tiktokApi.download(query);
@@ -293,7 +303,7 @@ async function startBot() {
         }
 
         await sock.sendMessage(senderNumber, {
-          text: `Lagi download video-nya, sabar ya ${namaUser} ...`,
+          text: `Lagi download video-nya, sabar ya ${namaUser} 😘 ...`,
         });
 
         const response = await axios.get(data.video, {
@@ -330,17 +340,55 @@ async function startBot() {
       }
 
       //INSTAGRAM
-    } else if (
+    } else if (messageText.startsWith(".daftar")) {
+      const parts = messageText.split(" ");
+      if (parts.length < 2) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: "Format salah. Gunakan: .daftar NAMA_LENGKAP",
+        });
+      }
+
+      const name = parts.slice(1).join(" ");
+      const number = senderNumber.replace("@s.whatsapp.net", "");
+
+      const alreadyRegistered = await getName(number);
+      if (alreadyRegistered) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Nomor ini sudah terdaftar dengan nama: ${alreadyRegistered}`,
+        });
+      }
+
+      const success = await registerNumber(number, name);
+      if (success) {
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `✅ Terima kasih ${name}, nomor kamu telah terdaftar!`,
+        });
+      } else {
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: "❌ Gagal mendaftar. Coba lagi nanti.",
+        });
+      }
+    }
+
+    //INSTAGRAM HANDLER
+    else if (
       messageText.startsWith(".ig") ||
       messageText.startsWith(".instagram")
     ) {
+      const namaUser = await getName(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      if (!namaUser) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Nomor kamu belum terdaftar. Kirim pesan dengan format:\n\n.daftar NAMA_LENGKAP`,
+        });
+      }
       const query = messageText.split(" ")[1];
       if (!query) {
         return sock.sendMessage(msg.key.remoteJid, {
           text: "Contoh penggunaan: .ig https://www.instagram.com/reel/xxxx",
         });
       }
-      const namaUser = "kak";
 
       try {
         const results = await instagramDl(query);
@@ -352,12 +400,12 @@ async function startBot() {
 
         if (!videoLink) {
           return sock.sendMessage(msg.key.remoteJid, {
-            text: `${nameSender}, vidio nya ga ketemu ....`,
+            text: `${namaUser}, vidio nya ga ketemu nih kyak ny kamu salah link deh ....`,
           });
         }
 
         await sock.sendMessage(msg.key.remoteJid, {
-          text: `sabar ya ${namaUser} ........`,
+          text: `sabar ya ${namaUser} 😘 ........`,
         });
 
         const response = await axios.get(videoLink, {
@@ -456,67 +504,67 @@ async function startBot() {
 
     //       await sock.sendMessage(msg.key.remoteJid, { text: hasil }, {quoted: msg});
     //     }
-    else if (messageText) {
-      const senderNumber = msg.key.remoteJid.replace("@s.whatsapp.net", "");
+    //   else if (messageText) {
+    //     const senderNumber = msg.key.remoteJid.replace("@s.whatsapp.net", "");
 
-      try {
-        const response = await axios.post(
-          "http://127.0.0.1:8000/api/botwa",
-          {
-            message: messageText,
-            number_telp: senderNumber,
-          },
-          {
-            headers: {
-              "X-API-KEY": process.env.API_SCHEDU_WA_AI,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+    //     try {
+    //       const response = await axios.post(
+    //         "http://127.0.0.1:8000/api/botwa",
+    //         {
+    //           message: messageText,
+    //           number_telp: senderNumber,
+    //         },
+    //         {
+    //           headers: {
+    //             "X-API-KEY": process.env.API_SCHEDU_WA_AI,
+    //             "Content-Type": "application/json",
+    //           },
+    //         }
+    //       );
 
-        const res = response.data;
+    //       const res = response.data;
 
-        // Action handler sesuai balasan Laravel
-        if (res.action === "answer_only") {
-          return await sock.sendMessage(
-            msg.key.remoteJid,
-            { text: res.message },
-            { quoted: msg }
-          );
-        } else if (res.action === "create_task") {
-          return await sock.sendMessage(
-            msg.key.remoteJid,
-            { text: `✅ Tugas berhasil dibuat: ${res.title}` },
-            { quoted: msg }
-          );
-        } else if (res.action === "create_note") {
-          return await sock.sendMessage(
-            msg.key.remoteJid,
-            { text: `📝 Catatan berhasil disimpan: ${res.title}` },
-            { quoted: msg }
-          );
-        } else if (res.action === "create_schedule") {
-          return await sock.sendMessage(
-            msg.key.remoteJid,
-            { text: `📅 Jadwal dibuat: ${res.title}` },
-            { quoted: msg }
-          );
-        } else {
-          return await sock.sendMessage(
-            msg.key.remoteJid,
-            { text: "⚠️ Perintah tidak dikenali" },
-            { quoted: msg }
-          );
-        }
-      } catch (error) {
-        console.error("Error kirim request:", error.message);
-        await sock.sendMessage(
-          msg.key.remoteJid,
-          { text: "🚨 Terjadi error saat memproses pesan" },
-          { quoted: msg }
-        );
-      }
-    }
+    //       // Action handler sesuai balasan Laravel
+    //       if (res.action === "answer_only") {
+    //         return await sock.sendMessage(
+    //           msg.key.remoteJid,
+    //           { text: res.message },
+    //           { quoted: msg }
+    //         );
+    //       } else if (res.action === "create_task") {
+    //         return await sock.sendMessage(
+    //           msg.key.remoteJid,
+    //           { text: `✅ Tugas berhasil dibuat: ${res.title}` },
+    //           { quoted: msg }
+    //         );
+    //       } else if (res.action === "create_note") {
+    //         return await sock.sendMessage(
+    //           msg.key.remoteJid,
+    //           { text: `📝 Catatan berhasil disimpan: ${res.title}` },
+    //           { quoted: msg }
+    //         );
+    //       } else if (res.action === "create_schedule") {
+    //         return await sock.sendMessage(
+    //           msg.key.remoteJid,
+    //           { text: `📅 Jadwal dibuat: ${res.title}` },
+    //           { quoted: msg }
+    //         );
+    //       } else {
+    //         return await sock.sendMessage(
+    //           msg.key.remoteJid,
+    //           { text: "⚠️ Perintah tidak dikenali" },
+    //           { quoted: msg }
+    //         );
+    //       }
+    //     } catch (error) {
+    //       console.error("Error kirim request:", error.message);
+    //       await sock.sendMessage(
+    //         msg.key.remoteJid,
+    //         { text: "🚨 Terjadi error saat memproses pesan" },
+    //         { quoted: msg }
+    //       );
+    //     }
+    //   }
   });
 }
 
