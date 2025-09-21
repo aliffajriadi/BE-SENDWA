@@ -463,7 +463,7 @@ async function startBot() {
     } else if (messageText.toLowerCase().startsWith("echo ")) {
       const echo = messageText.slice(5);
       await sock.sendMessage(senderNumber, { text: echo });
-    } else if (pesan === ".server") {
+    } else if (messageText === ".server") {
       await sock.sendMessage(msg.key.remoteJid, {
         text:  `SERVER 
         
