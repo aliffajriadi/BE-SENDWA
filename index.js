@@ -17,6 +17,7 @@ import { kataKotor, simpleReplies, panduan } from "./list.js";
 import { configDotenv } from "dotenv";
 import { dataos, getName, registerNumber } from "./func.js";
 import multer from "multer";
+import os from "os";
 const upload = multer({ storage: multer.memoryStorage() });
 
 configDotenv();
@@ -464,17 +465,23 @@ async function startBot() {
       const echo = messageText.slice(5);
       await sock.sendMessage(senderNumber, { text: echo });
     } else if (pesan === ".server") {
-      await sock.sendMessage(msg.key.remoteJid, {
+      const uptime = os.uptime(); // dalam detik
+const days = Math.floor(uptime / (60 * 60 * 24));
+const hours = Math.floor((uptime % (60 * 60 * 24)) / (60 * 60));
+const minutes = Math.floor((uptime % (60 * 60)) / 60);
+
+await sock.sendMessage(msg.key.remoteJid, {
   text: `*🖥 SERVER INFO*
 
-• *OS*        : ${dataos.platform}
-• *Release*   : ${dataos.release}
-• *Type*      : ${dataos.type}
-• *Hostname*  : ${dataos.hostname}
-• *Uptime*    : ${Math.floor(dataos.uptime / 60)} menit
-• *Total RAM* : ${(dataos.totalmem / 1024 / 1024 / 1024).toFixed(2)} GB
-• *Free RAM*  : ${(dataos.freemem / 1024 / 1024 / 1024).toFixed(2)} GB`
+• *OS*        : ${os.platform()}
+• *Release*   : ${os.release()}
+• *Type*      : ${os.type()}
+• *Hostname*  : ${os.hostname()}
+• *Uptime*    : ${days} hari ${hours} jam ${minutes} menit
+• *Total RAM* : ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
+• *Free RAM*  : ${(os.freemem() / 1024 / 1024 / 1024).toFixed(2)} GB`
 })
+
 
     }
   });
