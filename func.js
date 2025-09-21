@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 
 const filePath = path.resolve('./data.json');
 
@@ -47,4 +48,15 @@ export async function timeAgo(waktu) {
     if (jam < 24) return `*${jam}* jam yang lalu`;
     return `*${hari}* hari yang lalu`;
   }
+
+export const dataos = {
+    platform: os.platform(),
+    release: os.release(),
+    type: os.type(),
+    hostname: os.hostname(),
+    uptime: os.uptime(),
+    totalmem: os.totalmem(),
+    freemem: os.freemem()
+}
+
 

@@ -15,7 +15,9 @@ import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
 import { kataKotor, simpleReplies, panduan } from "./list.js";
 import { configDotenv } from "dotenv";
-import { getName, registerNumber } from "./func.js";
+import { dataos, getName, registerNumber } from "./func.js";
+import multer from "multer";
+const upload = multer({ storage: multer.memoryStorage() });
 
 configDotenv();
 //WEBSOCKET NYA INI
@@ -66,8 +68,8 @@ async function startBot() {
 
     if (connection === "close") {
       const shouldReconnect =
-        lastDisconnect.error instanceof Boom
-          ? lastDisconnect.error.output.statusCode !==
+        lastDisconnect?.error instanceof Boom
+          ? lastDisconnect.error.output?.statusCode !==
             DisconnectReason.loggedOut
           : true;
 
@@ -105,6 +107,31 @@ async function startBot() {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
+  
+  //KIRIM FILE
+  app.post("/api/kirim/pdf", upload.single("file"), async (req, res) => {
+  try {
+    const { nomor, pesan } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ message: "File tidak ditemukan" });
+    }
+
+    // kirim dokumen ke WhatsApp
+    await sock.sendMessage(`${nomor}@s.whatsapp.net`, {
+      document: file.buffer, // langsung buffer dari upload
+      mimetype: file.mimetype || "application/pdf",
+      fileName: file.originalname || "dokumen.pdf",
+      caption: pesan || "",
+    });
+
+    return res.status(200).json({ message: "PDF berhasil dikirim" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Gagal kirim PDF" });
+  }
+});
   //GRUB
   app.post("/api/grub", async (req, res) => {
     const pesan = req.body.pesan;
@@ -259,7 +286,6 @@ async function startBot() {
       },
     };
 
-    
     //===================================================================
 
     // Deteksi kata kotor
@@ -293,7 +319,6 @@ async function startBot() {
           text: "Contoh penggunaan: .tiktok https://vt.tiktok.com/xxxx",
         });
       }
-     
 
       try {
         const data = await tiktokApi.download(query);
@@ -438,133 +463,20 @@ async function startBot() {
     } else if (messageText.toLowerCase().startsWith("echo ")) {
       const echo = messageText.slice(5);
       await sock.sendMessage(senderNumber, { text: echo });
+    } else if (pesan === ".server") {
+      await sock.sendMessage(msg.key.remoteJid, {
+        text:  `SERVER 
+        
+        OS: ${dataos.platform}
+        RELEASE: ${dataos.release}
+        TYPE: ${dataos.type}
+        HOSTNAME: ${dataos.hostname}
+        UPTIME: ${dataos.uptime}
+        TOTALMEM: ${dataos.totalmem}
+        FREEMEM: ${dataos.freemem}
+        `,
+      })
     }
-    //     else if (messageText) {
-    //       const apiUrl =
-    //         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-
-    //       const requestBody = {
-    //         contents: [
-    //           {
-    //             parts: [
-    //               {
-    //                 text: `
-    // Anda adalah customer service resmi lomba OSC 2025.
-    // Gunakan data berikut sebagai satu-satunya sumber jawaban:
-
-    // 📄 Panduan & rangkuman teknikal meeting lomba Mascot Design:
-    // ${panduan.mascot}
-
-    // 📄 Panduan lomba Network Simulation:
-    // ${panduan.netsim}
-
-    // 📄 Panduan lomba Web Design:
-    // ${panduan.webdesign}
-
-    // 📄 Panduan lomba System Administration:
-    // ${panduan.sysadmin}
-
-    // ⚠️ Aturan Menjawab:
-    // 1. Jawab hanya berdasarkan panduan di atas, tanpa menambah atau mengubah fakta.
-    // 2. Gunakan bahasa Indonesia yang sopan dan profesional ala CS.
-    // 3. Format teks rapi seperti percakapan WhatsApp:
-    //    - Gunakan emoji yang relevan.
-    //    - Gunakan *bold* untuk penekanan.
-    //    - Rapikan dari list tab / space sesuai dengan styling text di whatsapp
-    //    - Gunakan bullet/nomor untuk daftar.
-    // 4. Jawab ringkas, jelas, dan to the point.
-    // 5. Jangan awali dengan kata "Halo" atau sapaan berulang jika tidak perlu.
-    // 6. Jika informasi tidak ada di panduan, jawab: "Mohon maaf, informasi tersebut tidak tersedia di panduan kami."
-
-    // Sekarang jawab pertanyaan ini sebagai CS:
-    // "${messageText}"
-    // `,
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       };
-
-    //       const config = {
-    //         headers: {
-    //           "x-goog-api-key": process.env.API_AI,
-    //           "Content-Type": "application/json",
-    //         },
-    //       };
-
-    //       let hasil = "";
-
-    //       try {
-    //         const response = await axios.post(apiUrl, requestBody, config);
-    //         hasil = response.data.candidates[0].content.parts[0].text;
-    //       } catch (error) {
-    //         console.error("Error saat memanggil API: ", error.message);
-    //         hasil = "Maaf, terjadi kesalahan saat menjawab pertanyaan Anda.";
-    //       }
-
-    //       await sock.sendMessage(msg.key.remoteJid, { text: hasil }, {quoted: msg});
-    //     }
-    //   else if (messageText) {
-    //     const senderNumber = msg.key.remoteJid.replace("@s.whatsapp.net", "");
-
-    //     try {
-    //       const response = await axios.post(
-    //         "http://127.0.0.1:8000/api/botwa",
-    //         {
-    //           message: messageText,
-    //           number_telp: senderNumber,
-    //         },
-    //         {
-    //           headers: {
-    //             "X-API-KEY": process.env.API_SCHEDU_WA_AI,
-    //             "Content-Type": "application/json",
-    //           },
-    //         }
-    //       );
-
-    //       const res = response.data;
-
-    //       // Action handler sesuai balasan Laravel
-    //       if (res.action === "answer_only") {
-    //         return await sock.sendMessage(
-    //           msg.key.remoteJid,
-    //           { text: res.message },
-    //           { quoted: msg }
-    //         );
-    //       } else if (res.action === "create_task") {
-    //         return await sock.sendMessage(
-    //           msg.key.remoteJid,
-    //           { text: `✅ Tugas berhasil dibuat: ${res.title}` },
-    //           { quoted: msg }
-    //         );
-    //       } else if (res.action === "create_note") {
-    //         return await sock.sendMessage(
-    //           msg.key.remoteJid,
-    //           { text: `📝 Catatan berhasil disimpan: ${res.title}` },
-    //           { quoted: msg }
-    //         );
-    //       } else if (res.action === "create_schedule") {
-    //         return await sock.sendMessage(
-    //           msg.key.remoteJid,
-    //           { text: `📅 Jadwal dibuat: ${res.title}` },
-    //           { quoted: msg }
-    //         );
-    //       } else {
-    //         return await sock.sendMessage(
-    //           msg.key.remoteJid,
-    //           { text: "⚠️ Perintah tidak dikenali" },
-    //           { quoted: msg }
-    //         );
-    //       }
-    //     } catch (error) {
-    //       console.error("Error kirim request:", error.message);
-    //       await sock.sendMessage(
-    //         msg.key.remoteJid,
-    //         { text: "🚨 Terjadi error saat memproses pesan" },
-    //         { quoted: msg }
-    //       );
-    //     }
-    //   }
   });
 }
 
