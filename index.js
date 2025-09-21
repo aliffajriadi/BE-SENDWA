@@ -463,19 +463,19 @@ async function startBot() {
     } else if (messageText.toLowerCase().startsWith("echo ")) {
       const echo = messageText.slice(5);
       await sock.sendMessage(senderNumber, { text: echo });
-    } else if (messageText === ".server") {
+    } else if (pesan === ".server") {
       await sock.sendMessage(msg.key.remoteJid, {
-        text:  `SERVER 
-        
-        OS: ${dataos.platform}
-        RELEASE: ${dataos.release}
-        TYPE: ${dataos.type}
-        HOSTNAME: ${dataos.hostname}
-        UPTIME: ${dataos.uptime}
-        TOTALMEM: ${dataos.totalmem}
-        FREEMEM: ${dataos.freemem}
-        `,
-      })
+  text: `*🖥 SERVER INFO*
+
+• *OS*        : ${dataos.platform}
+• *Release*   : ${dataos.release}
+• *Type*      : ${dataos.type}
+• *Hostname*  : ${dataos.hostname}
+• *Uptime*    : ${Math.floor(dataos.uptime / 60)} menit
+• *Total RAM* : ${(dataos.totalmem / 1024 / 1024 / 1024).toFixed(2)} GB
+• *Free RAM*  : ${(dataos.freemem / 1024 / 1024 / 1024).toFixed(2)} GB`
+})
+
     }
   });
 }
