@@ -369,7 +369,7 @@ async function startBot() {
       const parts = messageText.split(" ");
       if (parts.length < 2) {
         return sock.sendMessage(msg.key.remoteJid, {
-          text: "Format salah. Gunakan: .daftar NAMA_LENGKAP",
+          text: "Format salah. Gunakan: .daftar NAMAKAMU",
         });
       }
 
