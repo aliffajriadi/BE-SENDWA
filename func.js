@@ -23,13 +23,40 @@ export const registerNumber = async (number, name) => {
   const userExists = data.some(user => user.nomor === number);
   if (userExists) return false;
 
-  const newUser = { nomor: number, nama: name };
+  const newUser = { nomor: number, nama: name, token: 5 };
   data.push(newUser);
 
   // tulis ke file JSON
   await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
 
   return true;
+}
+
+export const getToken = async (number) => {
+  const user = data.find(user => user.nomor === number);
+  return user ? user.token : null;
+}
+export const profile = async (number) => {
+  const user = data.find(user => user.nomor === number);
+  return user ? user : null;
+}
+export const setToken = async (number, token) => {
+  const user = data.find(user => user.nomor === number);
+  if (user) {
+    user.token = user.token + token;
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    return user;
+  }
+  return null;
+}
+export const lessToken = async (number, token) => {
+  const user = data.find(user => user.nomor === number);
+  if (user) {
+    user.token = user.token - token;
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    return user;
+  }
+  return null;
 }
 
 

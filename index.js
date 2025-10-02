@@ -1,8 +1,5 @@
-import crypto from "crypto";
-// global.crypto = crypto;
 import express from "express";
 import cors from "cors";
-import { createPool } from "mysql2/promise";
 import {
   makeWASocket,
   useMultiFileAuthState,
@@ -13,9 +10,15 @@ import qrcode from "qrcode-terminal";
 import fs from "fs";
 import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
-import { kataKotor, simpleReplies, panduan } from "./list.js";
+import { kataKotor, simpleReplies, NomorOwner } from "./list.js";
 import { configDotenv } from "dotenv";
-import { dataos, getName, registerNumber } from "./func.js";
+import {
+  getName,
+  profile,
+  setToken,
+  registerNumber,
+  lessToken,
+} from "./func.js";
 import multer from "multer";
 import os from "os";
 const upload = multer({ storage: multer.memoryStorage() });
@@ -39,17 +42,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
-// SESUAIIN SAMA LOKAL NANTI
-// const pool = createPool({
-//   host: process.env.DB_HOST,
-//   user: process.env.DB_USER,
-//   database: process.env.DB_NAME,
-//   password: process.env.DB_PASS,
-//   waitForConnections: true,
-//   connectionLimit: 10,
-//   queueLimit: 0,
-// });
 
 // Function to start the WhatsApp bot
 async function startBot() {
@@ -108,31 +100,30 @@ async function startBot() {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
-  
   //KIRIM FILE
   app.post("/api/kirim/pdf", upload.single("file"), async (req, res) => {
-  try {
-    const { nomor, pesan } = req.body;
-    const file = req.file;
+    try {
+      const { nomor, pesan } = req.body;
+      const file = req.file;
 
-    if (!file) {
-      return res.status(400).json({ message: "File tidak ditemukan" });
+      if (!file) {
+        return res.status(400).json({ message: "File tidak ditemukan" });
+      }
+
+      // kirim dokumen ke WhatsApp
+      await sock.sendMessage(`${nomor}@s.whatsapp.net`, {
+        document: file.buffer, // langsung buffer dari upload
+        mimetype: file.mimetype || "application/pdf",
+        fileName: file.originalname || "dokumen.pdf",
+        caption: pesan || "",
+      });
+
+      return res.status(200).json({ message: "PDF berhasil dikirim" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Gagal kirim PDF" });
     }
-
-    // kirim dokumen ke WhatsApp
-    await sock.sendMessage(`${nomor}@s.whatsapp.net`, {
-      document: file.buffer, // langsung buffer dari upload
-      mimetype: file.mimetype || "application/pdf",
-      fileName: file.originalname || "dokumen.pdf",
-      caption: pesan || "",
-    });
-
-    return res.status(200).json({ message: "PDF berhasil dikirim" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Gagal kirim PDF" });
-  }
-});
+  });
   //GRUB
   app.post("/api/grub", async (req, res) => {
     const pesan = req.body.pesan;
@@ -144,7 +135,6 @@ async function startBot() {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
-
   // API for group broadcast
   app.post("/api/broadcast", (req, res) => {
     const groupId = req.body.tujuan;
@@ -180,6 +170,10 @@ async function startBot() {
       }
     })();
   });
+
+
+
+
   const rateLimitMap = new Map();
   // Handle incoming messages
   sock.ev.on("messages.upsert", async ({ messages }) => {
@@ -213,13 +207,13 @@ async function startBot() {
 
     // ✅ Anti-Spam Logic
     const now = Date.now();
-    const cooldown = 5000; // 5 detik
+    const cooldown = 2000; // 2 detik
 
     if (rateLimitMap.has(senderNumber)) {
       const lastTime = rateLimitMap.get(senderNumber);
       if (now - lastTime < cooldown) {
         await sock.sendMessage(senderNumber, {
-          text: "⏳ Tunggu beberapa detik sebelum mengirim pesan lagi.",
+          text: "⏳ Tunggu beberapa detik, Jangan di spam yahhh 😡",
         });
         return;
       }
@@ -306,12 +300,24 @@ async function startBot() {
       messageText.startsWith(".tiktok") ||
       messageText.startsWith(".tt")
     ) {
-      const namaUser = await getName(
-        senderNumber.replace("@s.whatsapp.net", "")
-      );
-      if (!namaUser) {
+      const pengirim = await profile(senderNumber.replace("@s.whatsapp.net", ""));
+      if (!pengirim) {
         return sock.sendMessage(msg.key.remoteJid, {
-          text: `Nomor kamu belum terdaftar. Kirim pesan dengan format:\n\n.daftar NAMA_LENGKAP`,
+          text: `⚠️ *Nomor kamu belum terdaftar!*
+
+📝 Silakan daftar dengan format:
+\`.daftar NAMA_LENGKAP\`
+
+Contoh:
+\`.daftar Alif Fajriadi\``,
+        });
+      }
+      const namaUser = pengirim.nama;
+      if (pengirim.token <= 0) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Yahhh token kamu habiss, Coba kontak owner / alif ya ${pengirim.nama}
+          
+Cek profil dan token dengan mengetik .me`,
         });
       }
       const query = messageText.split(" ")[1];
@@ -342,6 +348,7 @@ async function startBot() {
             text: "Ukuran video terlalu besar (>16MB). Gagal dikirim.",
           });
         }
+        lessToken(pengirim.nomor, 1);
 
         await sock.sendMessage(
           msg.key.remoteJid,
@@ -365,7 +372,7 @@ async function startBot() {
         );
       }
 
-      //INSTAGRAM
+      //Daftar pengguna
     } else if (messageText.startsWith(".daftar")) {
       const parts = messageText.split(" ");
       if (parts.length < 2) {
@@ -387,7 +394,10 @@ async function startBot() {
       const success = await registerNumber(number, name);
       if (success) {
         await sock.sendMessage(msg.key.remoteJid, {
-          text: `✅ Terima kasih ${name}, nomor kamu telah terdaftar!`,
+          text: `✅ *Terima kasih, ${name}!* 🎉
+Nomor kamu berhasil *terdaftar* 📌
+
+👉 Untuk melihat profil, ketik: *.me*`,
         });
       } else {
         await sock.sendMessage(msg.key.remoteJid, {
@@ -395,18 +405,30 @@ async function startBot() {
         });
       }
     }
-
     //INSTAGRAM HANDLER
     else if (
       messageText.startsWith(".ig") ||
       messageText.startsWith(".instagram")
     ) {
-      const namaUser = await getName(
-        senderNumber.replace("@s.whatsapp.net", "")
-      );
-      if (!namaUser) {
+      const pengirim = senderNumber.replace("@s.whatsapp.net", "");
+      const userPengirim = await profile(pengirim);
+      if (!userPengirim) {
         return sock.sendMessage(msg.key.remoteJid, {
-          text: `Nomor kamu belum terdaftar. Kirim pesan dengan format:\n\n.daftar NAMA_LENGKAP`,
+          text: `⚠️ *Nomor kamu belum terdaftar!*
+
+📝 Silakan daftar dengan format:
+\`.daftar NAMA_LENGKAP\`
+
+Contoh:
+\`.daftar Alif Fajriadi\``,
+        });
+      }
+      const namaUser = userPengirim.nama;
+      if (userPengirim.token <= 0) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Maaf ${namaUser}, kamu udah habis token
+          
+Cek Profil dan Token Kamu dengan mengetik: .me`,
         });
       }
       const query = messageText.split(" ")[1];
@@ -445,7 +467,7 @@ async function startBot() {
             text: "❌ Ukuran video terlalu besar (>16MB), tidak bisa dikirim.",
           });
         }
-
+        lessToken(pengirim, 1);
         await sock.sendMessage(
           msg.key.remoteJid,
           {
@@ -461,17 +483,15 @@ async function startBot() {
           text: "❌ Gagal mengambil video dari Instagram. Coba lagi nanti.",
         });
       }
-    } else if (messageText.toLowerCase().startsWith("echo ")) {
-      const echo = messageText.slice(5);
-      await sock.sendMessage(senderNumber, { text: echo });
+    //SERVER INFO
     } else if (pesan === ".server") {
       const uptime = os.uptime(); // dalam detik
-const days = Math.floor(uptime / (60 * 60 * 24));
-const hours = Math.floor((uptime % (60 * 60 * 24)) / (60 * 60));
-const minutes = Math.floor((uptime % (60 * 60)) / 60);
+      const days = Math.floor(uptime / (60 * 60 * 24));
+      const hours = Math.floor((uptime % (60 * 60 * 24)) / (60 * 60));
+      const minutes = Math.floor((uptime % (60 * 60)) / 60);
 
-await sock.sendMessage(msg.key.remoteJid, {
-  text: `*🖥 SERVER INFO*
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: `*🖥 SERVER INFO*
 
 • *OS*        : ${os.platform()}
 • *Release*   : ${os.release()}
@@ -479,10 +499,86 @@ await sock.sendMessage(msg.key.remoteJid, {
 • *Hostname*  : ${os.hostname()}
 • *Uptime*    : ${days} hari ${hours} jam ${minutes} menit
 • *Total RAM* : ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
-• *Free RAM*  : ${(os.freemem() / 1024 / 1024 / 1024).toFixed(2)} GB`
-})
+• *Free RAM*  : ${(os.freemem() / 1024 / 1024 / 1024).toFixed(2)} GB`,
+      });
+    //PROFIL INFO
+    } else if (pesan === ".me") {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      if (!dataProfil) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: `⚠️ *Nomor kamu belum terdaftar!*
 
+📝 Silakan daftar dengan format:
+\`.daftar NAMA_LENGKAP\`
 
+Contoh:
+\`.daftar Alif Fajriadi\``,
+        });
+      }
+      return await sock.sendMessage(msg.key.remoteJid, {
+  text: `╔══✦ *👤 PROFIL* ✦══╗
+
+✨ *Nama*       : ${dataProfil.nama}
+📞 *Nomor*      : ${dataProfil.nomor}
+💎 *Sisa Token* : ${dataProfil.token}
+
+${dataProfil.token <= 0 
+  ? `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
+  : "✅ _Token kamu masih tersedia, Hubungi Owner untuk menambah token!_ 🎉"}
+
+╚══════════════╝`
+});
+
+    }
+    //OWNER FITUR
+    else if (pesan.startsWith(".token")) {
+      const owner = NomorOwner;
+      const pengirim = senderNumber.replace("@s.whatsapp.net", "");
+      if (pengirim !== owner) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: `Anda bukan owner, lappet jangan aneh aneh kau`,
+        });
+      }
+      const nomorTujuan = pesan.split(" ")[1];
+      let token = pesan.split(" ")[2];
+      const penjumlahan = pesan.split(" ")[3];
+      token = parseInt(token);
+
+      if (isNaN(token)) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: "Token harus berupa angka",
+        });
+      }
+
+      if (penjumlahan == "tambah") {
+        const settoken = await setToken(nomorTujuan, token);
+        if (!settoken) {
+          return await sock.sendMessage(msg.key.remoteJid, {
+            text: `Nomor ${nomorTujuan} tidak ditemukan`,
+          });
+        }
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `Token berhasil ditambahkan ke ${nomorTujuan}
+        
+Token sekarang *${settoken.token}*
+Nama *${settoken.nama}*`,
+        });
+      } else if (penjumlahan == "kurang") {
+        const kurangtoken = await lessToken(nomorTujuan, token);
+        if (!kurangtoken) {
+          return await sock.sendMessage(msg.key.remoteJid, {
+            text: `Nomor ${nomorTujuan} tidak ditemukan`,
+          });
+        }
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `Token berhasil dikurangi ke ${nomorTujuan}
+        
+Token sekarang *${kurangtoken.token}*
+Nama *${kurangtoken.nama}*`,
+        });
+      }
     }
   });
 }
