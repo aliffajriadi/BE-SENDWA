@@ -111,23 +111,38 @@ const jadwal = {
 const NomorOwner = "62895603792033"
 
 const menu = `
-┏━━━👑 *MENU UTAMA* 👑━━━┓
+╭─━━━✦ *👑 MENU UTAMA 👑* ✦━━━─╮
 
 ⚡ *.menu*  
-   ➤ Cek daftar menu  
+   └─ ❯ Cek daftar menu  
 
 🎵 *.tt [link]*  
-   ➤ Download video TikTok  
+   └─ ❯ Download video TikTok  
 
 📸 *.ig [link]*  
-   ➤ Download video Instagram  
+   └─ ❯ Download video Instagram  
+
+🎨 *.stiker [foto]*  
+   └─ ❯ Ubah foto jadi stiker  
 
 👤 *.me*  
-   ➤ Lihat profil kamu  
+   └─ ❯ Lihat profil kamu  
 
-┗━━━━━━━━━━━━━━━━━━━━┛
-✨ Selalu siap bantu harimu!
+╰─━━━━━━━━━━━━━━━─╯
+✨ Bot siap menemani aktivitasmu ✨
 `;
 
 
-export { kataKotor, jadwal, simpleReplies, NomorOwner, menu };
+const daftar = `⚠️ *Nomor kamu belum terdaftar!*
+
+📝 Silakan daftar dengan format:
+\`.daftar NAMA_LENGKAP\`
+
+Contoh:
+\`.daftar Alif Fajriadi\`
+
+
+Cek daftar menu dengan:
+\`.menu\``
+
+export { kataKotor, jadwal, simpleReplies, NomorOwner, menu, daftar };

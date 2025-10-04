@@ -10,7 +10,7 @@ import qrcode from "qrcode-terminal";
 import fs from "fs";
 import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
-import { kataKotor, simpleReplies, NomorOwner, menu } from "./list.js";
+import { kataKotor, simpleReplies, NomorOwner, menu, daftar } from "./list.js";
 import { configDotenv } from "dotenv";
 import {
   getName,
@@ -18,9 +18,13 @@ import {
   setToken,
   registerNumber,
   lessToken,
+  getAllUser,
 } from "./func.js";
 import multer from "multer";
 import os from "os";
+import { downloadMediaMessage } from "@whiskeysockets/baileys";
+import { Sticker, StickerTypes } from "wa-sticker-formatter";
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 configDotenv();
@@ -171,9 +175,6 @@ async function startBot() {
     })();
   });
 
-
-
-
   const rateLimitMap = new Map();
   // Handle incoming messages
   sock.ev.on("messages.upsert", async ({ messages }) => {
@@ -190,7 +191,8 @@ async function startBot() {
     if (msg.key.participant && msg.key.remoteJid.endsWith("@g.us")) {
       if (msg.key.participant === sock.user.id) return;
     }
-
+    const jid = msg.key.remoteJid;
+    const m = msg.message; // <-- gunakan m untuk referensi pesan
     const senderNumber = msg.key.remoteJid;
     const messageType = Object.keys(msg.message)[0];
     let messageText = "";
@@ -300,16 +302,12 @@ async function startBot() {
       messageText.startsWith(".tiktok") ||
       messageText.startsWith(".tt")
     ) {
-      const pengirim = await profile(senderNumber.replace("@s.whatsapp.net", ""));
+      const pengirim = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
       if (!pengirim) {
         return sock.sendMessage(msg.key.remoteJid, {
-          text: `⚠️ *Nomor kamu belum terdaftar!*
-
-📝 Silakan daftar dengan format:
-\`.daftar NAMA_LENGKAP\`
-
-Contoh:
-\`.daftar Alif Fajriadi\``,
+          text: daftar,
         });
       }
       const namaUser = pengirim.nama;
@@ -414,13 +412,7 @@ Nomor kamu berhasil *terdaftar* 📌
       const userPengirim = await profile(pengirim);
       if (!userPengirim) {
         return sock.sendMessage(msg.key.remoteJid, {
-          text: `⚠️ *Nomor kamu belum terdaftar!*
-
-📝 Silakan daftar dengan format:
-\`.daftar NAMA_LENGKAP\`
-
-Contoh:
-\`.daftar Alif Fajriadi\``,
+          text: daftar,
         });
       }
       const namaUser = userPengirim.nama;
@@ -483,7 +475,7 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
           text: "❌ Gagal mengambil video dari Instagram. Coba lagi nanti.",
         });
       }
-    //SERVER INFO
+      //SERVER INFO
     } else if (pesan === ".server") {
       const uptime = os.uptime(); // dalam detik
       const days = Math.floor(uptime / (60 * 60 * 24));
@@ -501,36 +493,31 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
 • *Total RAM* : ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
 • *Free RAM*  : ${(os.freemem() / 1024 / 1024 / 1024).toFixed(2)} GB`,
       });
-    //PROFIL INFO
+      //PROFIL INFO
     } else if (pesan === ".me") {
       const dataProfil = await profile(
         senderNumber.replace("@s.whatsapp.net", "")
       );
       if (!dataProfil) {
         return await sock.sendMessage(msg.key.remoteJid, {
-          text: `⚠️ *Nomor kamu belum terdaftar!*
-
-📝 Silakan daftar dengan format:
-\`.daftar NAMA_LENGKAP\`
-
-Contoh:
-\`.daftar Alif Fajriadi\``,
+          text: daftar,
         });
       }
       return await sock.sendMessage(msg.key.remoteJid, {
-  text: `╔══✦ *👤 PROFIL* ✦══╗
+        text: `╔══✦ *👤 PROFIL* ✦══╗
 
 ✨ *Nama*       : ${dataProfil.nama}
 📞 *Nomor*      : ${dataProfil.nomor}
 💎 *Sisa Token* : ${dataProfil.token}
 
-${dataProfil.token <= 0 
-  ? `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
-  : "✅ _Token kamu masih tersedia, Hubungi Owner untuk menambah token!_ 🎉"}
+${
+  dataProfil.token <= 0
+    ? `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
+    : "✅ _Token kamu masih tersedia, Hubungi Owner untuk menambah token!_ 🎉"
+}
 
-╚══════════════╝`
-});
-
+╚══════════════╝`,
+      });
     }
     //OWNER FITUR
     else if (pesan.startsWith(".token")) {
@@ -579,11 +566,96 @@ Token sekarang *${kurangtoken.token}*
 Nama *${kurangtoken.nama}*`,
         });
       }
-    }
-    else if (pesan === ".menu") {
+    } else if (pesan === ".menu") {
       await sock.sendMessage(msg.key.remoteJid, {
         text: menu,
       });
+    } else if (
+      m.imageMessage &&
+      (m.imageMessage.caption || "").toLowerCase().trim() === ".stiker"
+    ) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      if (!dataProfil) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: daftar,
+        });
+      }
+      if (dataProfil.token <= 0) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`,
+        });
+      }
+      const jid = msg.key.remoteJid;
+      try {
+        // pakai util function downloadMediaMessage
+        const buffer = await downloadMediaMessage(
+          msg,
+          "buffer", // hasil dalam bentuk buffer
+          {},
+          {
+            logger: sock.logger,
+            reuploadRequest: sock.updateMediaMessage,
+          }
+        );
+
+        const sticker = new Sticker(buffer, {
+          pack: "BotWA",
+          author: "Alif",
+          type: StickerTypes.FULL,
+        });
+
+        const stickerBuffer = await sticker.toBuffer();
+        lessToken(senderNumber.replace("@s.whatsapp.net", ""), 1);
+
+        await sock.sendMessage(jid, { sticker: stickerBuffer });
+      } catch (err) {
+        console.error("Gagal buat stiker:", err);
+        await sock.sendMessage(jid, {
+          text: "❌ Gagal membuat stiker. Coba lagi ya.",
+        });
+      }
+    } else if (pesan === ".stiker") {
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: "kirim gambar dengan caption .stiker",
+      });
+    } else if (pesan.startsWith(".broadcast")) {
+      const pengirim = senderNumber.replace("@s.whatsapp.net", "");
+      if (pengirim !== NomorOwner) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: `Anda bukan owner, lappet jangan aneh aneh kau`,
+        });
+      }
+
+      // ambil teks setelah .broadcast
+      const rawPesan = pesan.split(" ").slice(1).join(" ");
+
+      const dataUser = await getAllUser();
+      try {
+        for (const user of dataUser) {
+          // 🔥 replace variabel dengan data user
+          let pesanKirim = rawPesan
+            .replace(/{nama}/g, user.nama)
+            .replace(/{nomor}/g, user.nomor)
+            .replace(/{token}/g, user.token);
+
+          await sock.sendMessage(`${user.nomor}@s.whatsapp.net`, {
+            text: pesanKirim,
+          });
+
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `Pesan berhasil dikirim ke ${dataUser.length} orang`,
+        });
+      } catch (error) {
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `Error: ${error}`,
+        });
+        console.log(error);
+      }
     }
   });
 }

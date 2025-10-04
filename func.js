@@ -49,6 +49,9 @@ export const setToken = async (number, token) => {
   }
   return null;
 }
+export const getAllUser = async () => {
+  return data
+}
 export const lessToken = async (number, token) => {
   const user = data.find(user => user.nomor === number);
   if (user) {
