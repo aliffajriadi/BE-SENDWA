@@ -10,7 +10,7 @@ import qrcode from "qrcode-terminal";
 import fs from "fs";
 import cheerio from "cherio/lib/cheerio.js";
 import axios from "axios";
-import { kataKotor, simpleReplies, NomorOwner } from "./list.js";
+import { kataKotor, simpleReplies, NomorOwner, menu } from "./list.js";
 import { configDotenv } from "dotenv";
 import {
   getName,
@@ -579,6 +579,11 @@ Token sekarang *${kurangtoken.token}*
 Nama *${kurangtoken.nama}*`,
         });
       }
+    }
+    else if (pesan === ".menu") {
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: menu,
+      });
     }
   });
 }

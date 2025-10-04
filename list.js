@@ -110,7 +110,24 @@ const jadwal = {
 };
 const NomorOwner = "62895603792033"
 
+const menu = `
+┏━━━👑 *MENU UTAMA* 👑━━━┓
+
+⚡ *.menu*  
+   ➤ Cek daftar menu  
+
+🎵 *.tt [link]*  
+   ➤ Download video TikTok  
+
+📸 *.ig [link]*  
+   ➤ Download video Instagram  
+
+👤 *.me*  
+   ➤ Lihat profil kamu  
+
+┗━━━━━━━━━━━━━━━━━━━━┛
+✨ Selalu siap bantu harimu!
+`;
 
 
-
-export { kataKotor, jadwal, simpleReplies, NomorOwner };
+export { kataKotor, jadwal, simpleReplies, NomorOwner, menu };
