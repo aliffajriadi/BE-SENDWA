@@ -124,7 +124,7 @@ const menu = `
 │   ❯ Download video TikTok
 ├─ 📸 *.ig [link]*
 │   ❯ Download video Instagram
-├─ 📖 *.igstory [username]*
+├─ 📖 *.igstory [link]*
 │   ❯ Download Story Instagram
 
 🎨 *KREASI & EDIT FOTO*
