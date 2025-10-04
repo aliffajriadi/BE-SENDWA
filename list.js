@@ -113,24 +113,40 @@ const NomorOwner = "62895603792033"
 const menu = `
 ╭─━━━✦ *👑 MENU UTAMA 👑* ✦━━━─╮
 
-⚡ *.menu*  
-   └─ ❯ Cek daftar menu  
+📚 *INFORMASI & PROFIL*
+├─ 💫 *.menu*
+│   ❯ Lihat daftar semua fitur
+├─ 👤 *.me*
+│   ❯ Lihat profil kamu
 
-🎵 *.tt [link]*  
-   └─ ❯ Download video TikTok  
+🎬 *DOWNLOAD MEDIA*
+├─ 🎵 *.tt [link]*
+│   ❯ Download video TikTok
+├─ 📸 *.ig [link]*
+│   ❯ Download video Instagram
+├─ 📖 *.igstory [username]*
+│   ❯ Download Story Instagram
 
-📸 *.ig [link]*  
-   └─ ❯ Download video Instagram  
+🎨 *KREASI & EDIT FOTO*
+├─ 🌈 *.stiker [foto]*
+│   ❯ Ubah foto jadi stiker
+├─ 🧼 *.removebg [foto]*
+│   ❯ Hapus background foto kamu
 
-🎨 *.stiker [foto]*  
-   └─ ❯ Ubah foto jadi stiker  
+💌 *PESAN & SERU-SERUAN*
+├─ 💖 *.confess [nomor] [pesan]*
+│   ❯ Kirim pesan rahasia ke nomor tujuan
+├─ 💝 *.sertifikat [namakamu]*
+│   ❯ Buat sertifikat cinta digital 💌
 
-👤 *.me*  
-   └─ ❯ Lihat profil kamu  
+🕹️ *TOOLS & FUN*
+├─ 🧩 *.cekroblok*
+│   ❯ Stalking akun Roblox
 
-╰─━━━━━━━━━━━━━━━─╯
-✨ Bot siap menemani aktivitasmu ✨
+╰─━━━━━━━━━━━━━━━━━━━─╯
+✨ _Bot siap menemani harimu!_ ✨
 `;
+
 
 
 const daftar = `⚠️ *Nomor kamu belum terdaftar!*

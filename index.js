@@ -8,22 +8,11 @@ import {
 import { Boom } from "@hapi/boom";
 import qrcode from "qrcode-terminal";
 import fs from "fs";
-import cheerio from "cherio/lib/cheerio.js";
-import axios from "axios";
 import { kataKotor, simpleReplies, NomorOwner, menu, daftar } from "./list.js";
 import { configDotenv } from "dotenv";
-import {
-  getName,
-  profile,
-  setToken,
-  registerNumber,
-  lessToken,
-  getAllUser,
-} from "./func.js";
+import { profile, lessToken, cekToken } from "./func.js";
 import multer from "multer";
-import os from "os";
-import { downloadMediaMessage } from "@whiskeysockets/baileys";
-import { Sticker, StickerTypes } from "wa-sticker-formatter";
+import * as fitur from "./fitur/index.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -181,9 +170,6 @@ async function startBot() {
     const msg = messages[0];
     if (!msg.message) return;
     if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
-    // Skip jika status atau tidak ada pesan
-    if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
-
     // Cek jika pengirim adalah bot sendiri
     if (msg.key.fromMe) return;
 
@@ -191,7 +177,6 @@ async function startBot() {
     if (msg.key.participant && msg.key.remoteJid.endsWith("@g.us")) {
       if (msg.key.participant === sock.user.id) return;
     }
-    const jid = msg.key.remoteJid;
     const m = msg.message; // <-- gunakan m untuk referensi pesan
     const senderNumber = msg.key.remoteJid;
     const messageType = Object.keys(msg.message)[0];
@@ -222,68 +207,9 @@ async function startBot() {
     }
     rateLimitMap.set(senderNumber, now);
 
-    //============================================================================================
-    //INSTAGRAM DOWNLOADER
-    async function instagramDl(url) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          const { data } = await axios.post(
-            "https://yt1s.io/api/ajaxSearch",
-            new URLSearchParams({ q: url, w: "", p: "home", lang: "en" }),
-            {
-              headers: {
-                Accept: "application/json, text/plain, */*",
-                "Content-Type":
-                  "application/x-www-form-urlencoded; charset=UTF-8",
-                Origin: "https://yt1s.io",
-                Referer: "https://yt1s.io/",
-                "User-Agent": "Mozilla/5.0 (compatible)",
-              },
-            }
-          );
-
-          const $ = cheerio.load(data.data);
-          const results = $("a.abutton.is-success.is-fullwidth.btn-premium")
-            .map((_, el) => ({
-              title: $(el).attr("title"),
-              url: $(el).attr("href"),
-            }))
-            .get();
-
-          resolve(results);
-        } catch (e) {
-          console.error("yt1s error:", e.message);
-          reject(e);
-        }
-      });
-    }
-    //END
-
-    //===================================================================
-    // TIKTOK - diletakkan di atas semua handler
-    const tiktokApi = {
-      download: async (url) => {
-        try {
-          const { data } = await axios.get(
-            `https://tikwm.com/api?url=${encodeURIComponent(url)}`
-          );
-          if (!data || !data.data || !data.data.play) return null;
-
-          return {
-            video: data.data.play,
-            audio: data.data.music,
-            thumbnail: data.data.cover,
-            description: data.data.title,
-            username: data.data.author.nickname,
-          };
-        } catch (err) {
-          console.error("API Tikwm error:", err.message);
-          return null;
-        }
-      },
+    const kirimPesan = async (pesan) => {
+      await sock.sendMessage(msg.key.remoteJid, { text: pesan });
     };
-
-    //===================================================================
 
     // Deteksi kata kotor
     if (kataKotor.some((kata) => pesan.includes(kata))) {
@@ -319,46 +245,9 @@ Cek profil dan token dengan mengetik .me`,
         });
       }
       const query = messageText.split(" ")[1];
-      if (!query) {
-        return sock.sendMessage(msg.key.remoteJid, {
-          text: "Contoh penggunaan: .tiktok https://vt.tiktok.com/xxxx",
-        });
-      }
-
       try {
-        const data = await tiktokApi.download(query);
-
-        if (!data || !data.video) {
-          throw new Error("Tidak bisa mengambil video.");
-        }
-
-        await sock.sendMessage(senderNumber, {
-          text: `Lagi download video-nya, sabar ya ${namaUser} 😘 ...`,
-        });
-
-        const response = await axios.get(data.video, {
-          responseType: "arraybuffer",
-        });
-
-        const videoBuffer = Buffer.from(response.data);
-        if (videoBuffer.length > 16 * 1024 * 1024) {
-          return sock.sendMessage(msg.key.remoteJid, {
-            text: "Ukuran video terlalu besar (>16MB). Gagal dikirim.",
-          });
-        }
-        lessToken(pengirim.nomor, 1);
-
-        await sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            video: videoBuffer,
-            mimetype: "video/mp4",
-            caption: `✅ Berhasil download!\n\n👤 ${data.username || "-"}\n📝 ${
-              data.description || "-"
-            }`,
-          },
-          { quoted: msg }
-        );
+        await fitur.tiktokDownloader(query, sock, msg, namaUser);
+        lessToken(senderNumber.replace("@s.whatsapp.net", ""), 1);
       } catch (err) {
         console.error("Gagal download TikTok:", err.message);
         await sock.sendMessage(
@@ -373,31 +262,9 @@ Cek profil dan token dengan mengetik .me`,
       //Daftar pengguna
     } else if (messageText.startsWith(".daftar")) {
       const parts = messageText.split(" ");
-      if (parts.length < 2) {
-        return sock.sendMessage(msg.key.remoteJid, {
-          text: "Format salah. Gunakan: .daftar NAMAKAMU",
-        });
-      }
-
-      const name = parts.slice(1).join(" ");
-      const number = senderNumber.replace("@s.whatsapp.net", "");
-
-      const alreadyRegistered = await getName(number);
-      if (alreadyRegistered) {
-        return sock.sendMessage(msg.key.remoteJid, {
-          text: `Nomor ini sudah terdaftar dengan nama: ${alreadyRegistered}`,
-        });
-      }
-
-      const success = await registerNumber(number, name);
-      if (success) {
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `✅ *Terima kasih, ${name}!* 🎉
-Nomor kamu berhasil *terdaftar* 📌
-
-👉 Untuk melihat profil, ketik: *.me*`,
-        });
-      } else {
+      try {
+        await fitur.daftarFunc(parts, sock, msg, senderNumber);
+      } catch (error) {
         await sock.sendMessage(msg.key.remoteJid, {
           text: "❌ Gagal mendaftar. Coba lagi nanti.",
         });
@@ -424,51 +291,9 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
         });
       }
       const query = messageText.split(" ")[1];
-      if (!query) {
-        return sock.sendMessage(msg.key.remoteJid, {
-          text: "Contoh penggunaan: .ig https://www.instagram.com/reel/xxxx",
-        });
-      }
-
       try {
-        const results = await instagramDl(query);
-
-        // Cari link yang mengandung mp4 (video)
-        const videoLink = results.find((r) =>
-          r.title.toLowerCase().includes("video")
-        )?.url;
-
-        if (!videoLink) {
-          return sock.sendMessage(msg.key.remoteJid, {
-            text: `${namaUser}, vidio nya ga ketemu nih kyak ny kamu salah link deh ....`,
-          });
-        }
-
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `sabar ya ${namaUser} 😘 ........`,
-        });
-
-        const response = await axios.get(videoLink, {
-          responseType: "arraybuffer",
-        });
-        const videoBuffer = Buffer.from(response.data);
-
-        // WhatsApp maksimal file 16MB
-        if (videoBuffer.length > 16 * 1024 * 1024) {
-          return sock.sendMessage(msg.key.remoteJid, {
-            text: "❌ Ukuran video terlalu besar (>16MB), tidak bisa dikirim.",
-          });
-        }
+        await fitur.instagramDownloader(query, sock, msg, namaUser);
         lessToken(pengirim, 1);
-        await sock.sendMessage(
-          msg.key.remoteJid,
-          {
-            video: videoBuffer,
-            mimetype: "video/mp4",
-            caption: "✅ Berhasil download video dari Instagram.",
-          },
-          { quoted: msg }
-        );
       } catch (e) {
         console.error("Gagal download Instagram:", e.message);
         await sock.sendMessage(msg.key.remoteJid, {
@@ -477,22 +302,13 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       }
       //SERVER INFO
     } else if (pesan === ".server") {
-      const uptime = os.uptime(); // dalam detik
-      const days = Math.floor(uptime / (60 * 60 * 24));
-      const hours = Math.floor((uptime % (60 * 60 * 24)) / (60 * 60));
-      const minutes = Math.floor((uptime % (60 * 60)) / 60);
-
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: `*🖥 SERVER INFO*
-
-• *OS*        : ${os.platform()}
-• *Release*   : ${os.release()}
-• *Type*      : ${os.type()}
-• *Hostname*  : ${os.hostname()}
-• *Uptime*    : ${days} hari ${hours} jam ${minutes} menit
-• *Total RAM* : ${(os.totalmem() / 1024 / 1024 / 1024).toFixed(2)} GB
-• *Free RAM*  : ${(os.freemem() / 1024 / 1024 / 1024).toFixed(2)} GB`,
-      });
+      try {
+        await fitur.cekServer(sock, msg);
+      } catch (error) {
+        await kirimPesan(
+          "❌ Terjadi kesalahan saat mengambil informasi server. Coba lagi nanti."
+        );
+      }
       //PROFIL INFO
     } else if (pesan === ".me") {
       const dataProfil = await profile(
@@ -521,55 +337,13 @@ ${
     }
     //OWNER FITUR
     else if (pesan.startsWith(".token")) {
-      const owner = NomorOwner;
-      const pengirim = senderNumber.replace("@s.whatsapp.net", "");
-      if (pengirim !== owner) {
-        return await sock.sendMessage(msg.key.remoteJid, {
-          text: `Anda bukan owner, lappet jangan aneh aneh kau`,
-        });
-      }
-      const nomorTujuan = pesan.split(" ")[1];
-      let token = pesan.split(" ")[2];
-      const penjumlahan = pesan.split(" ")[3];
-      token = parseInt(token);
-
-      if (isNaN(token)) {
-        return await sock.sendMessage(msg.key.remoteJid, {
-          text: "Token harus berupa angka",
-        });
-      }
-
-      if (penjumlahan == "tambah") {
-        const settoken = await setToken(nomorTujuan, token);
-        if (!settoken) {
-          return await sock.sendMessage(msg.key.remoteJid, {
-            text: `Nomor ${nomorTujuan} tidak ditemukan`,
-          });
-        }
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `Token berhasil ditambahkan ke ${nomorTujuan}
-        
-Token sekarang *${settoken.token}*
-Nama *${settoken.nama}*`,
-        });
-      } else if (penjumlahan == "kurang") {
-        const kurangtoken = await lessToken(nomorTujuan, token);
-        if (!kurangtoken) {
-          return await sock.sendMessage(msg.key.remoteJid, {
-            text: `Nomor ${nomorTujuan} tidak ditemukan`,
-          });
-        }
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `Token berhasil dikurangi ke ${nomorTujuan}
-        
-Token sekarang *${kurangtoken.token}*
-Nama *${kurangtoken.nama}*`,
-        });
+      try {
+        await fitur.tokenManage(sock, msg, senderNumber, pesan);
+      } catch (error) {
+        await kirimPesan("Gagal Menambahkan token");
       }
     } else if (pesan === ".menu") {
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: menu,
-      });
+      await kirimPesan(menu);
     } else if (
       m.imageMessage &&
       (m.imageMessage.caption || "").toLowerCase().trim() === ".stiker"
@@ -578,48 +352,21 @@ Nama *${kurangtoken.nama}*`,
         senderNumber.replace("@s.whatsapp.net", "")
       );
       if (!dataProfil) {
-        return await sock.sendMessage(msg.key.remoteJid, {
-          text: daftar,
-        });
+        return await kirimPesan(daftar);
       }
       if (dataProfil.token <= 0) {
-        return await sock.sendMessage(msg.key.remoteJid, {
-          text: `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`,
-        });
-      }
-      const jid = msg.key.remoteJid;
-      try {
-        // pakai util function downloadMediaMessage
-        const buffer = await downloadMediaMessage(
-          msg,
-          "buffer", // hasil dalam bentuk buffer
-          {},
-          {
-            logger: sock.logger,
-            reuploadRequest: sock.updateMediaMessage,
-          }
+        return await kirimPesan(
+          `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
         );
-
-        const sticker = new Sticker(buffer, {
-          pack: "BotWA",
-          author: "Alif",
-          type: StickerTypes.FULL,
-        });
-
-        const stickerBuffer = await sticker.toBuffer();
-        lessToken(senderNumber.replace("@s.whatsapp.net", ""), 1);
-
-        await sock.sendMessage(jid, { sticker: stickerBuffer });
-      } catch (err) {
-        console.error("Gagal buat stiker:", err);
-        await sock.sendMessage(jid, {
-          text: "❌ Gagal membuat stiker. Coba lagi ya.",
-        });
+      }
+      try {
+        await fitur.createStiker(sock, msg);
+        lessToken(dataProfil.nomor, 1);
+      } catch (error) {
+        await kirimPesan(`Gagal buat stiker ${error.message}`);
       }
     } else if (pesan === ".stiker") {
-      await sock.sendMessage(msg.key.remoteJid, {
-        text: "kirim gambar dengan caption .stiker",
-      });
+      await kirimPesan("Kirim gambar dengan caption .stiker");
     } else if (pesan.startsWith(".broadcast")) {
       const pengirim = senderNumber.replace("@s.whatsapp.net", "");
       if (pengirim !== NomorOwner) {
@@ -627,34 +374,95 @@ Nama *${kurangtoken.nama}*`,
           text: `Anda bukan owner, lappet jangan aneh aneh kau`,
         });
       }
-
-      // ambil teks setelah .broadcast
       const rawPesan = pesan.split(" ").slice(1).join(" ");
-
-      const dataUser = await getAllUser();
       try {
-        for (const user of dataUser) {
-          // 🔥 replace variabel dengan data user
-          let pesanKirim = rawPesan
-            .replace(/{nama}/g, user.nama)
-            .replace(/{nomor}/g, user.nomor)
-            .replace(/{token}/g, user.token);
+        await fitur.broadcast(sock, msg, rawPesan);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+      }
+    } else if (
+      m.imageMessage &&
+      (m.imageMessage.caption || "").toLowerCase().trim() === ".removebg"
+    ) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      if (!dataProfil) {
+        return await kirimPesan(daftar);
+      }
+      if (dataProfil.token < 3) {
+        return await kirimPesan(
+          `╭───❌ *TOKEN TIDAK CUKUP* ❌───╮
+  
+😢 Maaf, token kamu *tidak mencukupi* untuk menggunakan fitur ini.  
+💎 *Minimal Token Dibutuhkan:* 3  
+📊 *Token Kamu Sekarang:* ${dataProfil.token}
 
-          await sock.sendMessage(`${user.nomor}@s.whatsapp.net`, {
-            text: pesanKirim,
-          });
+📩 Hubungi *Owner* untuk menambah token:  
+👉 ${NomorOwner} / Alif  
 
-          await new Promise((r) => setTimeout(r, 2000));
-        }
+🪪 *Cek profil dan sisa token kamu:*  
+Ketik *.me*
 
-        await sock.sendMessage(msg.key.remoteJid, {
-          text: `Pesan berhasil dikirim ke ${dataUser.length} orang`,
-        });
+╰────────────────────────────╯`
+        );
+      }
+      try {
+        await fitur.removebgHandler(sock, msg);
+        lessToken(dataProfil.nomor, 3);
       } catch (error) {
         await sock.sendMessage(msg.key.remoteJid, {
-          text: `Error: ${error}`,
+          react: { text: "❌", key: m.key },
         });
-        console.log(error);
+        await sock.sendMessage(
+          m.key.remoteJid,
+          { text: `❌ RemoveBG Error: ${error}` },
+          { quoted: m }
+        );
+      }
+    } else if (pesan === ".removebg") {
+      await kirimPesan("Kirim gambar dengan caption .removebg");
+    } else if (pesan.startsWith(".cekroblok")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      const minimalToken = 2
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      const username = pesan.split(" ").slice(1).join(" ");
+      try {
+        const success = await fitur.robloxStalk(sock, msg, username, ".");
+        if (!success) return;
+        lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+      }
+    } else if (pesan.startsWith(".sertifikat")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      )
+      const minimalToken = 1
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      try {
+        await fitur.sertifikatCintaHandler(sock, msg, pesan);
+        lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+      }
+    } else if (pesan.startsWith(".confess")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      )
+      const minimalToken = 1
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      try {
+        const success = await fitur.confessHandler(sock, msg, pesan);
+        if(!success) return
+        lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
       }
     }
   });

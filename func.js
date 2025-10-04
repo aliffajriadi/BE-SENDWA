@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { daftar, NomorOwner } from './list.js';
 
 const filePath = path.resolve('./data.json');
 
@@ -19,11 +20,11 @@ export const getName = async (number) => {
   return user ? user.nama : null;
 }
 
-export const registerNumber = async (number, name) => {
+export const registerNumber = async (number, name, newToken) => {
   const userExists = data.some(user => user.nomor === number);
   if (userExists) return false;
 
-  const newUser = { nomor: number, nama: name, token: 5 };
+  const newUser = { nomor: number, nama: name, token: newToken };
   data.push(newUser);
 
   // tulis ke file JSON
@@ -60,6 +61,34 @@ export const lessToken = async (number, token) => {
     return user;
   }
   return null;
+}
+
+export const cekToken = async (dataProfil, sock, msg, minimalToken) => {
+  if (!dataProfil) {
+    sock.sendMessage(msg.key.remoteJid, {
+      text: daftar,
+    });
+    return false;
+  }
+  if (dataProfil.token < minimalToken) {
+    sock.sendMessage(msg.key.remoteJid, {
+      text: `╭───❌ *TOKEN TIDAK CUKUP* ❌───╮
+  
+😢 Maaf, token kamu *tidak mencukupi* untuk menggunakan fitur ini.  
+💎 *Minimal Token Dibutuhkan:* ${minimalToken}  
+📊 *Token Kamu Sekarang:* ${dataProfil.token}
+
+📩 Hubungi *Owner* untuk menambah token:  
+👉 ${NomorOwner} / Alif  
+
+🪪 *Cek profil dan sisa token kamu:*  
+Ketik *.me*
+
+╰────────────────────────────╯`,
+    });
+    return false;
+  }
+  return true;
 }
 
 
