@@ -11,7 +11,9 @@ import { sertifikatCintaHandler } from "./sertifcinta.js";
 import { confessHandler } from "./confess.js";
 import { upscaleHandler } from "./hdfoto.js";
 import { cekPeserta } from "./cekPeserta.js";
+import { qrcodeHandler } from "./link-qrcode.js";
+import { bratvidHandler } from "./bratvid.js";
 
 export {
-    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta
+    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler
 }

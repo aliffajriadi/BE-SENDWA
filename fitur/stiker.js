@@ -2,6 +2,7 @@ import { downloadMediaMessage } from "@whiskeysockets/baileys";
 import { Sticker, StickerTypes } from "wa-sticker-formatter";
 
 
+
 export const createStiker = async (sock, msg) => {
     const jid = msg.key.remoteJid;
       try {
@@ -24,7 +25,7 @@ export const createStiker = async (sock, msg) => {
 
         const stickerBuffer = await sticker.toBuffer();
 
-        await sock.sendMessage(jid, { sticker: stickerBuffer });
+        await sock.sendMessage(jid, { sticker: stickerBuffer }, { quoted: msg });
       } catch (err) {
         console.error("Gagal buat stiker:", err);
         throw new Error(err);

@@ -111,15 +111,15 @@ const jadwal = {
 const NomorOwner = "62895603792033"
 
 const menu = `
-╭─━━━✦ *👑 MENU UTAMA 👑* ✦━━━─╮
+╭─━━━✦ *🤖 MENU UTAMA* ✦━━━─╮
 
-📚 *INFORMASI & PROFIL*
-├─ 💫 *.menu*
+📂 *INFORMASI & PROFIL*
+├─ 🏷️ *.menu*
 │   ❯ Lihat daftar semua fitur
 ├─ 👤 *.me*
 │   ❯ Lihat profil kamu
 
-🎬 *DOWNLOAD MEDIA*
+📥 *DOWNLOAD MEDIA*
 ├─ 🎵 *.tt [link]*
 │   ❯ Download video TikTok
 ├─ 📸 *.ig [link]*
@@ -128,26 +128,31 @@ const menu = `
 │   ❯ Download Story Instagram
 
 🎨 *KREASI & EDIT FOTO*
-├─ 🌈 *.stiker [foto]*
+├─ 🖼️ *.stiker [foto]*
 │   ❯ Ubah foto jadi stiker
-├─ 🧼 *.removebg [foto]*
+├─ 🧹 *.removebg [foto]*
 │   ❯ Hapus background foto kamu
-├─ 📸 *.hd [foto]*
-│   ❯ Buat foto menjadi HD
+├─ ✨ *.hd [foto]*
+│   ❯ Buat foto jadi HD
+├─ 🎀 *.brat [text]*
+│   ❯ Buat stiker dengan teks lucu
 
 💌 *PESAN & SERU-SERUAN*
-├─ 💖 *.confess [nomor] [pesan]*
+├─ 💌 *.confess [nomor] [pesan]*
 │   ❯ Kirim pesan rahasia ke nomor tujuan
-├─ 💝 *.sertifikat [namakamu]*
-│   ❯ Buat sertifikat cinta digital 💌
+├─ 💖 *.sertifikat [namakamu]*
+│   ❯ Buat sertifikat cinta digital 💞
 
-🕹️ *TOOLS & FUN*
-├─ 🧩 *.cekroblok*
+🧰 *TOOLS & FUN*
+├─ 🕹️ *.cekroblok [username]*
 │   ❯ Stalking akun Roblox
+├─ 🧾 *.qrcode [link]*
+│   ❯ Buat QR Code dari link
 
 ╰─━━━━━━━━━━━━━━━━━━━─╯
-✨ _Bot siap menemani harimu!_ ✨
+🌟 _Bot siap menemani harimu dengan gaya!_ 🌟
 `;
+
 
 
 

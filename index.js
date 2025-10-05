@@ -208,7 +208,19 @@ async function startBot() {
     rateLimitMap.set(senderNumber, now);
 
     const kirimPesan = async (pesan) => {
-      await sock.sendMessage(msg.key.remoteJid, { text: pesan });
+      await sock.sendMessage(
+        msg.key.remoteJid,
+        { text: pesan },
+        { quoted: msg }
+      );
+    };
+    const kirimReaction = async (emoji) => {
+      await sock.sendMessage(msg.key.remoteJid, {
+        react: {
+          text: emoji,
+          key: msg.key,
+        },
+      });
     };
 
     // Deteksi kata kotor
@@ -319,6 +331,7 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
           text: daftar,
         });
       }
+      await kirimReaction("✨");
       return await sock.sendMessage(msg.key.remoteJid, {
         text: `╔══✦ *👤 PROFIL* ✦══╗
 
@@ -329,7 +342,10 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
 ${
   dataProfil.token <= 0
     ? `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
-    : "✅ _Token kamu masih tersedia, Hubungi Owner untuk menambah token!_ 🎉"
+    : `💡 Token kamu aktif!
+Token digunakan untuk mengakses fitur-fitur bot seperti download, stiker, dan lainnya.
+Semakin banyak token = semakin banyak fitur yang bisa kamu pakai!
+`
 }
 
 ╚══════════════╝`,
@@ -475,12 +491,10 @@ Ketik *.me*
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
       if (!cek) return;
       try {
-      const success = await fitur.upscaleHandler(sock, msg);
-      if (!success) return;
-      lessToken(dataProfil.nomor, minimalToken);
-      } catch (error) {
-        
-      }
+        const success = await fitur.upscaleHandler(sock, msg);
+        if (!success) return;
+        lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {}
     } else if (pesan === ".cekpeserta") {
       if (senderNumber.replace("@s.whatsapp.net", "") !== NomorOwner) {
         return await kirimPesan(
@@ -489,6 +503,40 @@ Ketik *.me*
       }
       try {
         await fitur.cekPeserta(sock, msg);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+      }
+    } else if (pesan.startsWith(".qrcode")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      const minimalToken = 1;
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      const args = pesan.split(" ").slice(1).join(" ");
+      try {
+        const success = await fitur.qrcodeHandler(sock, msg, args);
+        if (!success) return;
+        lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+      }
+    } else if (pesan.startsWith(".brat")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      const minimalToken = 1;
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      const args = pesan.split(" ").slice(1).join(" ");
+      try {
+        await kirimReaction("🕒");
+        const success = await fitur.bratvidHandler(sock, msg, args);
+        if (!success) {
+          return await kirimReaction("❌");
+        }
+        lessToken(dataProfil.nomor, minimalToken);
+        await kirimReaction("✅");
       } catch (error) {
         await kirimPesan(`Gagal kirim pesan ${error.message}`);
       }
