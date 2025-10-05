@@ -426,7 +426,7 @@ Ketik *.me*
       const dataProfil = await profile(
         senderNumber.replace("@s.whatsapp.net", "")
       );
-      const minimalToken = 2
+      const minimalToken = 2;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
       if (!cek) return;
       const username = pesan.split(" ").slice(1).join(" ");
@@ -440,8 +440,8 @@ Ketik *.me*
     } else if (pesan.startsWith(".sertifikat")) {
       const dataProfil = await profile(
         senderNumber.replace("@s.whatsapp.net", "")
-      )
-      const minimalToken = 1
+      );
+      const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
       if (!cek) return;
       try {
@@ -453,14 +453,42 @@ Ketik *.me*
     } else if (pesan.startsWith(".confess")) {
       const dataProfil = await profile(
         senderNumber.replace("@s.whatsapp.net", "")
-      )
-      const minimalToken = 1
+      );
+      const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
       if (!cek) return;
       try {
         const success = await fitur.confessHandler(sock, msg, pesan);
-        if(!success) return
+        if (!success) return;
         lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+      }
+    } else if (
+      m.imageMessage &&
+      (m.imageMessage.caption || "").toLowerCase().trim() === ".hd"
+    ) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      const minimalToken = 1;
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      try {
+      const success = await fitur.upscaleHandler(sock, msg);
+      if (!success) return;
+      lessToken(dataProfil.nomor, minimalToken);
+      } catch (error) {
+        
+      }
+    } else if (pesan === ".cekpeserta") {
+      if (senderNumber.replace("@s.whatsapp.net", "") !== NomorOwner) {
+        return await kirimPesan(
+          "Anda bukan owner, lappet jangan aneh aneh kau"
+        );
+      }
+      try {
+        await fitur.cekPeserta(sock, msg);
       } catch (error) {
         await kirimPesan(`Gagal kirim pesan ${error.message}`);
       }

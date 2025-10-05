@@ -91,6 +91,10 @@ Ketik *.me*
   return true;
 }
 
+export const allData = async () => {
+  return data
+}
+
 
 
 export async function timeAgo(waktu) {

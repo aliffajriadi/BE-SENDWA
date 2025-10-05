@@ -9,7 +9,9 @@ import { removebgHandler } from "./removebg.js";
 import { robloxStalk } from "./roblok-stalk.js";
 import { sertifikatCintaHandler } from "./sertifcinta.js";
 import { confessHandler } from "./confess.js";
+import { upscaleHandler } from "./hdfoto.js";
+import { cekPeserta } from "./cekPeserta.js";
 
 export {
-    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler
+    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta
 }

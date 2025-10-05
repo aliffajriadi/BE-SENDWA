@@ -132,6 +132,8 @@ const menu = `
 │   ❯ Ubah foto jadi stiker
 ├─ 🧼 *.removebg [foto]*
 │   ❯ Hapus background foto kamu
+├─ 📸 *.hd [foto]*
+│   ❯ Buat foto menjadi HD
 
 💌 *PESAN & SERU-SERUAN*
 ├─ 💖 *.confess [nomor] [pesan]*
