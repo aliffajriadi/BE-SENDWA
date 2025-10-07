@@ -13,7 +13,8 @@ import { upscaleHandler } from "./hdfoto.js";
 import { cekPeserta } from "./cekPeserta.js";
 import { qrcodeHandler } from "./link-qrcode.js";
 import { bratvidHandler } from "./bratvid.js";
+import { ghibliHandler } from "./ghibli.js";
 
 export {
-    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler
+    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler
 }

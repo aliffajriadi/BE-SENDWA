@@ -3,6 +3,7 @@ import cors from "cors";
 import {
   makeWASocket,
   useMultiFileAuthState,
+  downloadMediaMessage,
   DisconnectReason,
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
@@ -37,6 +38,9 @@ app.use((req, res, next) => {
 });
 
 // Function to start the WhatsApp bot
+// Untuk melacak siapa yang kirim gambar ke Ghibli
+global.antreGhibli = new Map();
+
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
   const sock = makeWASocket({
@@ -165,6 +169,7 @@ async function startBot() {
   });
 
   const rateLimitMap = new Map();
+
   // Handle incoming messages
   sock.ev.on("messages.upsert", async ({ messages }) => {
     const msg = messages[0];
@@ -177,6 +182,116 @@ async function startBot() {
     if (msg.key.participant && msg.key.remoteJid.endsWith("@g.us")) {
       if (msg.key.participant === sock.user.id) return;
     }
+
+    //bot ghibli
+    if (msg.key.remoteJid === "6285520728156@s.whatsapp.net") {
+      const tujuan = global.pendingGhibli.get("6285520728156");
+
+      if (tujuan) {
+        if (!global.ghibliListeners) global.ghibliListeners = new Map();
+
+        if (!global.ghibliListeners.has("6285520728156")) {
+          global.ghibliListeners.set("6285520728156", true);
+
+          console.log(
+            "🕒 Menunggu semua respon dari bot Ghibli selama 30 detik..."
+          );
+
+          // listener sementara
+          const listener = async ({ messages }) => {
+            for (const m of messages) {
+              if (m.key.remoteJid === "6285520728156@s.whatsapp.net") {
+                const pesan = m.message;
+
+                try {
+                  // Kalau pesan teks biasa
+                  if (pesan?.conversation || pesan?.extendedTextMessage) {
+                    const text =
+                      pesan.conversation ||
+                      pesan.extendedTextMessage?.text ||
+                      "";
+                    await sock.sendMessage(tujuan, { text });
+                  }
+                  // Kalau pesan gambar
+                  else if (pesan?.imageMessage) {
+                    const buffer = await downloadMediaMessage(
+                      m,
+                      "buffer",
+                      {},
+                      { logger: console }
+                    );
+                    const caption = pesan.imageMessage.caption || "";
+                    await sock.sendMessage(tujuan, {
+                      image: buffer,
+                      caption,
+                    });
+                  }
+                  // Kalau pesan video
+                  else if (pesan?.videoMessage) {
+                    const buffer = await downloadMediaMessage(
+                      m,
+                      "buffer",
+                      {},
+                      { logger: console }
+                    );
+                    const caption = pesan.videoMessage.caption || "";
+                    await sock.sendMessage(tujuan, {
+                      video: buffer,
+                      caption,
+                    });
+                  }
+                  // Kalau pesan audio
+                  else if (pesan?.audioMessage) {
+                    const buffer = await downloadMediaMessage(
+                      m,
+                      "buffer",
+                      {},
+                      { logger: console }
+                    );
+                    await sock.sendMessage(tujuan, {
+                      audio: buffer,
+                      mimetype: "audio/mp4",
+                    });
+                  }
+                  // Kalau pesan stiker
+                  else if (pesan?.stickerMessage) {
+                    const buffer = await downloadMediaMessage(
+                      m,
+                      "buffer",
+                      {},
+                      { logger: console }
+                    );
+                    await sock.sendMessage(tujuan, {
+                      sticker: buffer,
+                    });
+                  }
+                  global.antreGhibli.set("status", false);
+
+
+                  console.log("📩 Forward ke:", tujuan);
+                } catch (err) {
+                  console.error("⚠️ Gagal forward pesan Ghibli:", err.message);
+                }
+              }
+            }
+          };
+
+          sock.ev.on("messages.upsert", listener);
+
+          // Timeout 30 detik
+          setTimeout(() => {
+            sock.ev.off("messages.upsert", listener);
+            global.ghibliListeners.delete("6285520728156");
+            global.pendingGhibli.delete("6285520728156");
+            console.log("⏹️ Listener Ghibli dimatikan setelah 35 detik.");
+          }, 35000);
+        }
+      }
+
+      return;
+    }
+    //END BOT GHIBLI
+
     const m = msg.message; // <-- gunakan m untuk referensi pesan
     const senderNumber = msg.key.remoteJid;
     const messageType = Object.keys(msg.message)[0];
@@ -540,10 +655,45 @@ Ketik *.me*
       } catch (error) {
         await kirimPesan(`Gagal kirim pesan ${error.message}`);
       }
+    } else if (
+      (m.imageMessage &&
+        m.imageMessage.caption.toLowerCase().trim() === ".ghibli") ||
+      pesan === ".ghibli"
+    ) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      const minimalToken = 3;
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      if (global.antreGhibli.get("status") === true) {
+        return await kirimPesan(
+          "Tunggu sebentar, fitur ini sedang digunakan oleh orang lain..."
+        );
+      }
+
+      global.antreGhibli.set("status", true);
+      console.log(`🔒 Ghibli dipakai oleh ${dataProfil.nama}`);
+
+      try {
+        await kirimReaction("🕒");
+        const success = await fitur.ghibliHandler(sock, msg);
+        if (!success) {
+        global.antreGhibli.set("status", false);
+          return await kirimReaction("❌");
+        }
+        lessToken(dataProfil.nomor, minimalToken);
+        await kirimReaction("✅");
+      } catch (error) {
+        global.antreGhibli.set("status", false);
+        await kirimPesan(`Gagal kirim pesan ${error.message}`);
+        return await kirimReaction("❌");
+      }
     }
   });
 }
 
+global.pendingGhibli = new Map();
 await startBot();
 app.listen(process.env.PORT, "0.0.0.0", () => {
   console.log(`Server running on 0.0.0.0:${process.env.PORT}`);
