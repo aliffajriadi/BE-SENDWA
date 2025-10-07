@@ -130,6 +130,8 @@ const menu = `
 🎨 *KREASI & EDIT FOTO*
 ├─ 🖼️ *.stiker [foto]*
 │   ❯ Ubah foto jadi stiker
+├─ 🎉 *.ghibli [foto]*
+│   ❯ Ubah foto kamu menjadi Anime Ghibli
 ├─ 🧹 *.removebg [foto]*
 │   ❯ Hapus background foto kamu
 ├─ ✨ *.hd [foto]*
