@@ -375,7 +375,8 @@ Cek profil dan token dengan mengetik .me`,
       }
       const query = messageText.split(" ")[1];
       try {
-        await fitur.tiktokDownloader(query, sock, msg, namaUser);
+        const cek = await fitur.tiktokDownloader(query, sock, msg, namaUser);
+        if (!cek) return;
         lessToken(senderNumber.replace("@s.whatsapp.net", ""), 1);
       } catch (err) {
         console.error("Gagal download TikTok:", err.message);
@@ -421,7 +422,8 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       }
       const query = messageText.split(" ")[1];
       try {
-        await fitur.instagramDownloader(query, sock, msg, namaUser);
+        const cek = await fitur.instagramDownloader(query, sock, msg, namaUser);
+        if (!cek) return;
         lessToken(pengirim, 1);
       } catch (e) {
         console.error("Gagal download Instagram:", e.message);
