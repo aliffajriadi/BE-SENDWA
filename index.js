@@ -4,6 +4,7 @@ import {
   makeWASocket,
   useMultiFileAuthState,
   downloadMediaMessage,
+  fetchLatestWaWebVersion,
   DisconnectReason,
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
@@ -40,10 +41,11 @@ app.use((req, res, next) => {
 // Function to start the WhatsApp bot
 // Untuk melacak siapa yang kirim gambar ke Ghibli
 global.antreGhibli = new Map();
-
+const { version } = await fetchLatestWaWebVersion();
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
   const sock = makeWASocket({
+    version,
     printQRInTerminal: true,
     auth: state,
     browser: ["Bot WhatsApp", "Chrome", "1.0.0"],
