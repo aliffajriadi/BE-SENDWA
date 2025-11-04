@@ -269,7 +269,6 @@ async function startBot() {
                   }
                   global.antreGhibli.set("status", false);
 
-
                   console.log("📩 Forward ke:", tujuan);
                 } catch (err) {
                   console.error("⚠️ Gagal forward pesan Ghibli:", err.message);
@@ -353,6 +352,8 @@ async function startBot() {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
 
       //TIKTOK HANDLER
+    } else if (senderNumber == "120363405146206045@g.us") {
+      await fitur.sendPesan(pesan);
     } else if (
       messageText.startsWith(".tiktok") ||
       messageText.startsWith(".tt")
@@ -683,7 +684,7 @@ Ketik *.me*
         await kirimReaction("🕒");
         const success = await fitur.ghibliHandler(sock, msg);
         if (!success) {
-        global.antreGhibli.set("status", false);
+          global.antreGhibli.set("status", false);
           return await kirimReaction("❌");
         }
         lessToken(dataProfil.nomor, minimalToken);
