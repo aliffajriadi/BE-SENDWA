@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const webhook = process.env.DISCORD_WEBHOOK_ANNOUC;
+console.log(webhook);
 
 export const sendPesan = async (pesan) => {
   try {
