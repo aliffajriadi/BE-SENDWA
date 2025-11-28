@@ -694,6 +694,34 @@ Ketik *.me*
         await kirimPesan(`Gagal kirim pesan ${error.message}`);
         return await kirimReaction("❌");
       }
+    } else if (
+      messageText.startsWith(".dcig")
+    ) {
+      const pengirim = senderNumber.replace("@s.whatsapp.net", "");
+      const userPengirim = await profile(pengirim);
+      if (!userPengirim) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: daftar,
+        });
+      }
+      const namaUser = userPengirim.nama;
+      if (userPengirim.token <= 0) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Maaf ${namaUser}, kamu udah habis token
+          
+Cek Profil dan Token Kamu dengan mengetik: .me`,
+        });
+      }
+      const query = messageText.split(" ")[1];
+      try {
+        const cek = await fitur.instagramDownloaderDC(query, sock, msg, namaUser);
+        if (!cek) return;
+      } catch (e) {
+        console.error("Gagal download Instagram:", e.message);
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: "❌ Gagal mengambil video dari Instagram. Coba lagi nanti.",
+        });
+      }
     }
   });
 }

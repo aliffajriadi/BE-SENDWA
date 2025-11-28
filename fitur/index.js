@@ -15,6 +15,7 @@ import { qrcodeHandler } from "./link-qrcode.js";
 import { bratvidHandler } from "./bratvid.js";
 import { ghibliHandler } from "./ghibli.js";
 import { sendPesan } from "./annoc-dc.js";
+import { instagramDownloaderDC } from "./meme-dc.js";
 export {
-    instagramDownloader, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan
+    instagramDownloader, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan
 }
