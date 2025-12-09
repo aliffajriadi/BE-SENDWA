@@ -15,6 +15,9 @@ import { configDotenv } from "dotenv";
 import { profile, lessToken, cekToken } from "./func.js";
 import multer from "multer";
 import * as fitur from "./fitur/index.js";
+import { checkApiKey, checkApiKeyBuisness } from "./helper/apiKey.js";
+import * as query from "./helper/crud-Key.js";
+import { crudApiKeyBuisness } from "./fitur/apiKeyBisnis.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -27,16 +30,6 @@ try {
 const app = express();
 app.use(cors());
 app.use(express.json());
-// Middleware cek API Key
-app.use((req, res, next) => {
-  const apiKey = req.headers["x-api-key"];
-
-  if (!apiKey || apiKey !== process.env.API_KEY) {
-    return res.status(403).json({ error: "masukkan api key yang valid!" });
-  }
-
-  next();
-});
 
 // Function to start the WhatsApp bot
 // Untuk melacak siapa yang kirim gambar ke Ghibli
@@ -88,8 +81,9 @@ async function startBot() {
     }
   });
 
-  // API to send message via website
-  app.post("/api/kirim", async (req, res) => {
+  /////////////////////////////////////////////////////////////////////////////
+  // API to send message via website personal
+  app.post("/api/kirim", checkApiKey, async (req, res) => {
     const pesan = req.body.pesan;
     const nomor = req.body.nomor;
     try {
@@ -99,32 +93,56 @@ async function startBot() {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
-  //KIRIM FILE
-  app.post("/api/kirim/pdf", upload.single("file"), async (req, res) => {
+  // API to send message via website for buisines
+  app.post("/api/kirim-pesan", checkApiKeyBuisness, async (req, res) => {
+    if (!req.body.pesan || !req.body.nomor) {
+      return res
+        .status(400)
+        .json({ message: "Data tidak lengkap, butuh body pesan dan nomor" });
+    }
+    const pesan = req.body.pesan;
+    let nomor = req.body.nomor;
+    if (nomor.startsWith("0")) {
+      nomor = "62" + nomor.slice(1);
+    }
     try {
-      const { nomor, pesan } = req.body;
-      const file = req.file;
-
-      if (!file) {
-        return res.status(400).json({ message: "File tidak ditemukan" });
-      }
-
-      // kirim dokumen ke WhatsApp
-      await sock.sendMessage(`${nomor}@s.whatsapp.net`, {
-        document: file.buffer, // langsung buffer dari upload
-        mimetype: file.mimetype || "application/pdf",
-        fileName: file.originalname || "dokumen.pdf",
-        caption: pesan || "",
-      });
-
-      return res.status(200).json({ message: "PDF berhasil dikirim" });
+      await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
+      return res.status(200).json({ message: "Pesan berhasil dikirim" });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Gagal kirim PDF" });
+      return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
+  //KIRIM FILE
+  app.post(
+    "/api/kirim/pdf",
+    checkApiKey,
+    upload.single("file"),
+    async (req, res) => {
+      try {
+        const { nomor, pesan } = req.body;
+        const file = req.file;
+
+        if (!file) {
+          return res.status(400).json({ message: "File tidak ditemukan" });
+        }
+
+        // kirim dokumen ke WhatsApp
+        await sock.sendMessage(`${nomor}@s.whatsapp.net`, {
+          document: file.buffer, // langsung buffer dari upload
+          mimetype: file.mimetype || "application/pdf",
+          fileName: file.originalname || "dokumen.pdf",
+          caption: pesan || "",
+        });
+
+        return res.status(200).json({ message: "PDF berhasil dikirim" });
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Gagal kirim PDF" });
+      }
+    }
+  );
   //GRUB
-  app.post("/api/grub", async (req, res) => {
+  app.post("/api/grub", checkApiKey, async (req, res) => {
     const pesan = req.body.pesan;
     const nomor = req.body.nomor;
     try {
@@ -135,7 +153,7 @@ async function startBot() {
     }
   });
   // API for group broadcast
-  app.post("/api/broadcast", (req, res) => {
+  app.post("/api/broadcast", checkApiKey, async (req, res) => {
     const groupId = req.body.tujuan;
     const pesan = req.body.pesan;
 
@@ -169,6 +187,61 @@ async function startBot() {
       }
     })();
   });
+  // CEK TOKEN
+  // /api/cek-token?key=YOURTOKEN
+  // Cache data (result) dan anti-spam
+const tokenCheckCache = {};
+const CHECK_COOLDOWN = 8000; // 2 detik
+
+app.get("/api/cek-token", async (req, res) => {
+  const key = req.query.key;
+  try {
+    if (!key) {
+      return res.status(400).json({ error: "API key wajib dikirim!" });
+    }
+    const now = Date.now();
+    const cache = tokenCheckCache[key];
+    // ======================================================
+    // 🔥 Kalau sudah pernah cek dalam 2 detik → balas dari cache
+    // ======================================================
+    if (cache && cache.expires > now) {
+      return res.status(200).json({
+        success: true,
+        message: "Token valid! (cached)",
+        cached: true,
+        data: cache.data,
+      });
+    }
+
+    // ======================================================
+    // 🔍 Query JSON (karena cache tidak valid / expired)
+    // ======================================================
+    const findKey = query.readDataBy("key", key);
+
+    if (!findKey) {
+      return res.status(403).json({ error: "API key tidak valid!" });
+    }
+
+    // Simpan ke cache (valid 2 detik)
+    tokenCheckCache[key] = {
+      data: findKey,
+      expires: now + CHECK_COOLDOWN,
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Token valid!",
+      cached: false,
+      data: findKey,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Terjadi kesalahan server" });
+  }
+});
+
+  ///////////////////////////////////////////////////////////////////////////////
 
   const rateLimitMap = new Map();
 
@@ -694,9 +767,7 @@ Ketik *.me*
         await kirimPesan(`Gagal kirim pesan ${error.message}`);
         return await kirimReaction("❌");
       }
-    } else if (
-      messageText.startsWith(".dcig")
-    ) {
+    } else if (messageText.startsWith(".dcig")) {
       const pengirim = senderNumber.replace("@s.whatsapp.net", "");
       const userPengirim = await profile(pengirim);
       if (!userPengirim) {
@@ -714,7 +785,12 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       }
       const query = messageText.split(" ")[1];
       try {
-        const cek = await fitur.instagramDownloaderDC(query, sock, msg, namaUser);
+        const cek = await fitur.instagramDownloaderDC(
+          query,
+          sock,
+          msg,
+          namaUser
+        );
         if (!cek) return;
       } catch (e) {
         console.error("Gagal download Instagram:", e.message);
@@ -722,6 +798,10 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
           text: "❌ Gagal mengambil video dari Instagram. Coba lagi nanti.",
         });
       }
+    } else if (pesan.startsWith(".apikey")) {
+      try {
+        crudApiKeyBuisness(sock, msg, senderNumber, pesan);
+      } catch (error) {}
     }
   });
 }
