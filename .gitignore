@@ -26,3 +26,4 @@ data.json
 
 test/
 /generated/prisma
+/prisma/*.db
