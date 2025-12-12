@@ -1,79 +1,87 @@
-import fs from 'fs/promises';
-import path from 'path';
-import os from 'os';
+import prisma from './config/db.js';
 import { daftar, NomorOwner } from './list.js';
+import os from 'os';
 
-const filePath = path.resolve('./data.json');
-
-// baca data JSON
-let data = [];
-try {
-  const fileContent = await fs.readFile(filePath, 'utf-8');
-  data = JSON.parse(fileContent);
-} catch (err) {
-  console.error('Gagal membaca file JSON, membuat data kosong...');
-  data = [];
-}
-
+/**
+ * Ambil nama user berdasarkan nomor
+ */
 export const getName = async (number) => {
-  const user = data.find(user => user.nomor === number);
-  return user ? user.nama : null;
-}
+  const user = await prisma.user.findUnique({ where: { nomor: number } });
+  return user ? user.name : null;
+};
 
+/**
+ * Registrasi nomor baru
+ */
 export const registerNumber = async (number, name, newToken) => {
-  const userExists = data.some(user => user.nomor === number);
+  const userExists = await prisma.user.findUnique({ where: { nomor: number } });
   if (userExists) return false;
 
-  const newUser = { nomor: number, nama: name, token: newToken };
-  data.push(newUser);
-
-  // tulis ke file JSON
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-
+  await prisma.user.create({
+    data: { nomor: number, name, token: newToken },
+  });
   return true;
-}
+};
 
+/**
+ * Ambil token user
+ */
 export const getToken = async (number) => {
-  const user = data.find(user => user.nomor === number);
+  const user = await prisma.user.findUnique({ where: { nomor: number } });
   return user ? user.token : null;
-}
-export const profile = async (number) => {
-  const user = data.find(user => user.nomor === number);
-  return user ? user : null;
-}
-export const setToken = async (number, token) => {
-  const user = data.find(user => user.nomor === number);
-  if (user) {
-    user.token = user.token + token;
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-    return user;
-  }
-  return null;
-}
-export const getAllUser = async () => {
-  return data
-}
-export const lessToken = async (number, token) => {
-  const user = data.find(user => user.nomor === number);
-  if (user) {
-    user.token = user.token - token;
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-    return user;
-  }
-  return null;
-}
+};
 
+/**
+ * Ambil profil user
+ */
+export const profile = async (number) => {
+  const data = await prisma.user.findUnique({ where: { nomor: number } });
+  if (!data) return null;
+
+  // buat alias supaya ada properti `nama` juga
+  return { ...data, nama: data.name };
+};
+
+
+/**
+ * Tambah token user
+ */
+export const setToken = async (number, token) => {
+  return prisma.user.update({
+    where: { nomor: number },
+    data: { token: { increment: token } },
+  });
+};
+
+/**
+ * Kurangi token user
+ */
+export const lessToken = async (number, token) => {
+  return prisma.user.update({
+    where: { nomor: number },
+    data: { token: { decrement: token } },
+  });
+};
+
+/**
+ * Ambil semua user
+ */
+export const getAllUser = async () => {
+  return prisma.user.findMany();
+};
+
+/**
+ * Cek token cukup atau tidak
+ */
 export const cekToken = async (dataProfil, sock, msg, minimalToken) => {
   if (!dataProfil) {
-    sock.sendMessage(msg.key.remoteJid, {
-      text: daftar,
-    });
+    sock.sendMessage(msg.key.remoteJid, { text: daftar });
     return false;
   }
+
   if (dataProfil.token < minimalToken) {
     sock.sendMessage(msg.key.remoteJid, {
       text: `╭───❌ *TOKEN TIDAK CUKUP* ❌───╮
-  
 😢 Maaf, token kamu *tidak mencukupi* untuk menggunakan fitur ini.  
 💎 *Minimal Token Dibutuhkan:* ${minimalToken}  
 📊 *Token Kamu Sekarang:* ${dataProfil.token}
@@ -83,43 +91,47 @@ export const cekToken = async (dataProfil, sock, msg, minimalToken) => {
 
 🪪 *Cek profil dan sisa token kamu:*  
 Ketik *.me*
-
 ╰────────────────────────────╯`,
     });
     return false;
   }
   return true;
-}
+};
 
+/**
+ * Semua data user (sama dengan getAllUser)
+ */
 export const allData = async () => {
-  return data
-}
+  return prisma.user.findMany();
+};
 
-
-
+/**
+ * Fungsi waktu "time ago"
+ */
 export async function timeAgo(waktu) {
-    const sekarang = new Date();
-    const dibuat = new Date(waktu);
-    const selisihMs = sekarang - dibuat;
-  
-    const menit = Math.floor(selisihMs / (1000 * 60));
-    const jam = Math.floor(selisihMs / (1000 * 60 * 60));
-    const hari = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
-  
-    if (menit < 1) return "Baru saja";
-    if (menit < 60) return `*${menit}* menit yang lalu`;
-    if (jam < 24) return `*${jam}* jam yang lalu`;
-    return `*${hari}* hari yang lalu`;
-  }
+  const sekarang = new Date();
+  const dibuat = new Date(waktu);
+  const selisihMs = sekarang - dibuat;
 
-export const dataos = {
-    platform: os.platform(),
-    release: os.release(),
-    type: os.type(),
-    hostname: os.hostname(),
-    uptime: os.uptime(),
-    totalmem: os.totalmem(),
-    freemem: os.freemem()
+  const menit = Math.floor(selisihMs / (1000 * 60));
+  const jam = Math.floor(selisihMs / (1000 * 60 * 60));
+  const hari = Math.floor(selisihMs / (1000 * 60 * 60 * 24));
+
+  if (menit < 1) return "Baru saja";
+  if (menit < 60) return `*${menit}* menit yang lalu`;
+  if (jam < 24) return `*${jam}* jam yang lalu`;
+  return `*${hari}* hari yang lalu`;
 }
 
-
+/**
+ * Info OS
+ */
+export const dataos = {
+  platform: os.platform(),
+  release: os.release(),
+  type: os.type(),
+  hostname: os.hostname(),
+  uptime: os.uptime(),
+  totalmem: os.totalmem(),
+  freemem: os.freemem(),
+};

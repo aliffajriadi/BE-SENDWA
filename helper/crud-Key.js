@@ -1,116 +1,54 @@
-import fs from "fs";
-import path from "path";
-
-// Lokasi file JSON
-const filePath = path.join(process.cwd(), "key.json");
+import prisma from "../config/db.js";
 
 /**
- * Membaca file JSON dan mengembalikan array data.
- * Jika file belum ada → return [].
- *
- * Cara pakai:
- *   const data = readJSON();
+ * CREATE — Tambah data baru ke database.
  */
-const readJSON = () => {
-  try {
-    const content = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(content);
-  } catch {
-    return []; // kosong jika file tidak ada
-  }
+export const createData = async (newItem) => {
+  return await prisma.apiKey.create({
+    data: {
+      key: newItem.key,    // mapping dari JSON
+      owner: newItem.owner,
+      token: newItem.token,
+      createdAt: newItem.createdAt,
+      id : String(newItem.id),
+    },
+  });
 };
 
 /**
- * Menyimpan array data ke file JSON.
- *
- * Cara pakai:
- *   saveJSON([{ id: 1, name: "alif" }]);
+ * READ ALL — Ambil semua data.
  */
-const saveJSON = (data) => {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-};
-
-// =======================================================
-//                    CRUD FUNCTIONS
-// =======================================================
-
-/**
- * CREATE — Tambah data baru ke file JSON.
- *
- * Cara pakai:
- *   createData({ id: 1, name: "alif" });
- */
-export const createData = (newItem) => {
-  const data = readJSON();
-  data.push(newItem);
-  saveJSON(data);
-  return newItem;
-};
-
-/**
- * READ ALL — Ambil semua isi JSON.
- *
- * Cara pakai:
- *   const semua = readData();
- *   console.log(semua);
- */
-export const readData = () => {
-  return readJSON();
+export const readData = async () => {
+  return prisma.apiKey.findMany();
 };
 
 /**
  * READ BY — Cari data berdasarkan field tertentu.
- * 
- * Cara pakai:
- *   readDataBy("id", 1);
- *   readDataBy("name", "alif");
  */
-export const readDataBy = (key, value) => {
-  const data = readJSON();
-  return data.find((item) => item[key] === value) || null;
+export const readDataBy = async (field, value) => {
+  return await prisma.apiKey.findFirst({
+    where: {
+      [field]: value,
+    },
+  });
 };
 
 /**
- * UPDATE — Update item berdasarkan key & value tertentu.
- * 
- * Cara pakai:
- *   updateData("id", 1, { name: "fajriadi" });
- * 
- * Catatan:
- * - Hanya field yang diberikan saja yang berubah (partial update)
+ * UPDATE — Update data berdasarkan field tertentu.
  */
-export const updateData = (key, value, updatedFields) => {
-  const data = readJSON();
-  const index = data.findIndex((item) => item[key] === value);
-
-  if (index === -1) return null;
-
-  data[index] = {
-    ...data[index],
-    ...updatedFields,
-  };
-
-  saveJSON(data);
-  return data[index];
+export const updateData = async (field, value, updatedFields) => {
+  return await prisma.apiKey.updateMany({
+    where: { [field]: value },
+    data: updatedFields,
+  });
 };
 
 /**
- * DELETE — Hapus data berdasarkan key & value.
- * 
- * Cara pakai:
- *   deleteData("id", 1);
- *   deleteData("name", "alif");
- * 
- * Return:
- *   true  → ada data yang dihapus
- *   false → tidak ada data cocok
+ * DELETE — Hapus data berdasarkan field tertentu.
  */
-export const deleteData = (key, value) => {
-  const data = readJSON();
-  const newData = data.filter((item) => item[key] !== value);
-
-  if (newData.length === data.length) return false;
-
-  saveJSON(newData);
-  return true;
+export const deleteData = async (field, value) => {
+  const result = await prisma.apiKey.deleteMany({
+    where: { [field]: value },
+  });
+  return result.count > 0;
 };

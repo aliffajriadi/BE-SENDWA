@@ -25,3 +25,4 @@ nodemon.json
 data.json
 
 test/
+/generated/prisma

@@ -31,7 +31,7 @@ export const crudApiKeyBuisness = async (sock, msg, senderNumber, pesan) => {
 
   // ========================= LIST =========================
   if (key === "list") {
-    const all = query.readData();
+    const all = await query.readData();
 
     if (!all || all.length === 0) {
       return sock.sendMessage(jid, { text: "Belum ada API Key tersimpan." });
@@ -58,7 +58,7 @@ export const crudApiKeyBuisness = async (sock, msg, senderNumber, pesan) => {
       });
     }
 
-    const exist = query.readDataBy("key", key);
+    const exist = await query.readDataBy("key", key);
     if (exist) return sock.sendMessage(jid, { text: "API Key sudah ada!" });
 
     const newData = {
@@ -69,7 +69,7 @@ export const crudApiKeyBuisness = async (sock, msg, senderNumber, pesan) => {
       createdAt: new Date().toISOString()
     };
 
-    query.createData(newData);
+    await query.createData(newData);
 
     return sock.sendMessage(jid, {
       text: `✔ API Key berhasil dibuat!\nKey: ${key}\nToken: ${angka}\nOwner: ${pemilik}`
@@ -78,7 +78,7 @@ export const crudApiKeyBuisness = async (sock, msg, senderNumber, pesan) => {
 
   // ========================= INFO =========================
   if (sub === "info") {
-    const data = query.readDataBy("key", key);
+    const data = await query.readDataBy("key", key);
     if (!data) return sock.sendMessage(jid, { text: "API Key tidak ditemukan!" });
 
     return sock.sendMessage(jid, {
@@ -92,7 +92,7 @@ Created: ${data.createdAt}`
 
   // ========================= DELETE =========================
   if (sub === "delete") {
-    const deleted = query.deleteData("key", key);
+    const deleted = await query.deleteData("key", key);
     if (!deleted) return sock.sendMessage(jid, { text: "API Key tidak ditemukan!" });
 
     return sock.sendMessage(jid, {
@@ -105,11 +105,11 @@ Created: ${data.createdAt}`
     if (isNaN(angka))
       return sock.sendMessage(jid, { text: "Jumlah harus angka!" });
 
-    const data = query.readDataBy("key", key);
+    const data = await query.readDataBy("key", key);
     if (!data) return sock.sendMessage(jid, { text: "API Key tidak ditemukan!" });
 
     const newToken = data.token + angka;
-    query.updateData("id", data.id, { token: newToken });
+    await query.updateData("id", data.id, { token: newToken });
 
     return sock.sendMessage(jid, {
       text: `✔ Token ditambah!\nKey: ${key}\nToken Baru: ${newToken}`
@@ -121,13 +121,13 @@ Created: ${data.createdAt}`
     if (isNaN(angka))
       return sock.sendMessage(jid, { text: "Jumlah harus angka!" });
 
-    const data = query.readDataBy("key", key);
+    const data = await query.readDataBy("key", key);
     if (!data) return sock.sendMessage(jid, { text: "API Key tidak ditemukan!" });
 
     let newToken = data.token - angka;
     if (newToken < 0) newToken = 0;
 
-    query.updateData("id", data.id, { token: newToken });
+    await query.updateData("id", data.id, { token: newToken });
 
     return sock.sendMessage(jid, {
       text: `✔ Token dikurangi!\nKey: ${key}\nToken Baru: ${newToken}`

@@ -190,56 +190,55 @@ async function startBot() {
   // CEK TOKEN
   // /api/cek-token?key=YOURTOKEN
   // Cache data (result) dan anti-spam
-const tokenCheckCache = {};
-const CHECK_COOLDOWN = 8000; // 2 detik
+  const tokenCheckCache = {};
+  const CHECK_COOLDOWN = 8000; // 2 detik
 
-app.get("/api/cek-token", async (req, res) => {
-  const key = req.query.key;
-  try {
-    if (!key) {
-      return res.status(400).json({ error: "API key wajib dikirim!" });
-    }
-    const now = Date.now();
-    const cache = tokenCheckCache[key];
-    // ======================================================
-    // 🔥 Kalau sudah pernah cek dalam 2 detik → balas dari cache
-    // ======================================================
-    if (cache && cache.expires > now) {
+  app.get("/api/cek-token", async (req, res) => {
+    const key = req.query.key;
+    try {
+      if (!key) {
+        return res.status(400).json({ error: "API key wajib dikirim!" });
+      }
+      const now = Date.now();
+      const cache = tokenCheckCache[key];
+      // ======================================================
+      // 🔥 Kalau sudah pernah cek dalam 2 detik → balas dari cache
+      // ======================================================
+      if (cache && cache.expires > now) {
+        return res.status(200).json({
+          success: true,
+          message: "Token valid! (cached)",
+          cached: true,
+          data: cache.data,
+        });
+      }
+
+      // ======================================================
+      // 🔍 Query JSON (karena cache tidak valid / expired)
+      // ======================================================
+      const findKey = query.readDataBy("key", key);
+
+      if (!findKey) {
+        return res.status(403).json({ error: "API key tidak valid!" });
+      }
+
+      // Simpan ke cache (valid 2 detik)
+      tokenCheckCache[key] = {
+        data: findKey,
+        expires: now + CHECK_COOLDOWN,
+      };
+
       return res.status(200).json({
         success: true,
-        message: "Token valid! (cached)",
-        cached: true,
-        data: cache.data,
+        message: "Token valid!",
+        cached: false,
+        data: findKey,
       });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Terjadi kesalahan server" });
     }
-
-    // ======================================================
-    // 🔍 Query JSON (karena cache tidak valid / expired)
-    // ======================================================
-    const findKey = query.readDataBy("key", key);
-
-    if (!findKey) {
-      return res.status(403).json({ error: "API key tidak valid!" });
-    }
-
-    // Simpan ke cache (valid 2 detik)
-    tokenCheckCache[key] = {
-      data: findKey,
-      expires: now + CHECK_COOLDOWN,
-    };
-
-    return res.status(200).json({
-      success: true,
-      message: "Token valid!",
-      cached: false,
-      data: findKey,
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Terjadi kesalahan server" });
-  }
-});
+  });
 
   ///////////////////////////////////////////////////////////////////////////////
 
@@ -367,8 +366,11 @@ app.get("/api/cek-token", async (req, res) => {
     //END BOT GHIBLI
 
     const m = msg.message; // <-- gunakan m untuk referensi pesan
-    const senderNumber = msg.key.remoteJid;
+    const senderNumber =
+      msg.key.senderPn || msg.key.participant || msg.key.remoteJid;
+
     const messageType = Object.keys(msg.message)[0];
+
     let messageText = "";
     if (messageType === "conversation") {
       messageText = msg.message.conversation;
