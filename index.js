@@ -216,7 +216,7 @@ async function startBot() {
       // ======================================================
       // 🔍 Query JSON (karena cache tidak valid / expired)
       // ======================================================
-      const findKey = query.readDataBy("key", key);
+      const findKey = await query.readDataBy("key", key);
 
       if (!findKey) {
         return res.status(403).json({ error: "API key tidak valid!" });
