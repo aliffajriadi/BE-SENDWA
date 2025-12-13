@@ -9,7 +9,7 @@ export const checkApiKey = (req, res, next) => {
   next();
 };
 
-export const checkApiKeyBuisness = (req, res, next) => {
+export const checkApiKeyBuisness = async (req, res, next) => {
   const apiKey = req.headers["x-api-key"];
 
   if (!apiKey) {
@@ -17,7 +17,7 @@ export const checkApiKeyBuisness = (req, res, next) => {
   }
 
   // Cari apakah API key ada di JSON
-  const findKey = query.readDataBy("key", apiKey);
+  const findKey = await query.readDataBy("key", apiKey);
 
   if (!findKey) {
     return res.status(403).json({ error: "API key tidak valid!" });

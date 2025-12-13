@@ -551,7 +551,7 @@ Semakin banyak token = semakin banyak fitur yang bisa kamu pakai!
       try {
         await fitur.tokenManage(sock, msg, senderNumber, pesan);
       } catch (error) {
-        await kirimPesan("Gagal Menambahkan token");
+        await kirimPesan("Gagal Menambahkan token" + error.message);
       }
     } else if (pesan === ".menu") {
       await kirimPesan(menu);
