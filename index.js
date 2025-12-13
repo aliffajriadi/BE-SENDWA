@@ -109,7 +109,8 @@ async function startBot() {
       await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
       return res.status(200).json({ message: "Pesan berhasil dikirim" });
     } catch (error) {
-      return res.status(500).json({ message: "Pesan gagal dikirim" });
+      console.log(error);
+      return res.status(500).json({ message: "Pesan gagal dikirim" + error });
     }
   });
   //KIRIM FILE
@@ -236,7 +237,7 @@ async function startBot() {
       });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Terjadi kesalahan server" });
+      res.status(500).json({ error: "Terjadi kesalahan server" + error });
     }
   });
 
