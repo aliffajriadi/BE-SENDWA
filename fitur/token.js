@@ -31,7 +31,7 @@ export const tokenManage = async (sock, msg, senderNumber, pesan) => {
           text: `Token berhasil ditambahkan ke ${nomorTujuan}
         
 Token sekarang *${settoken.token}*
-Nama *${settoken.nama}*`,
+Nama *${settoken.name}*`,
         });
       } else if (penjumlahan == "kurang") {
         const kurangtoken = await lessToken(nomorTujuan, token);
@@ -44,7 +44,7 @@ Nama *${settoken.nama}*`,
           text: `Token berhasil dikurangi ke ${nomorTujuan}
         
 Token sekarang *${kurangtoken.token}*
-Nama *${kurangtoken.nama}*`,
+Nama *${kurangtoken.name}*`,
         });
       }
 }

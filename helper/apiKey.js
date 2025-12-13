@@ -34,5 +34,7 @@ export const checkApiKeyBuisness = async (req, res, next) => {
   // Update JSON
   await query.updateData("id", findKey.id, { token: newToken });
 
+  req.apikeyId = findKey.id;
+
   next();
 };

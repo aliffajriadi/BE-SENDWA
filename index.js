@@ -18,6 +18,7 @@ import * as fitur from "./fitur/index.js";
 import { checkApiKey, checkApiKeyBuisness } from "./helper/apiKey.js";
 import * as query from "./helper/crud-Key.js";
 import { crudApiKeyBuisness } from "./fitur/apiKeyBisnis.js";
+import rateLimit from "express-rate-limit";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -30,6 +31,13 @@ try {
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const userLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 menit
+  max: 15,              // maksimal 15 request per user
+  keyGenerator: (req) => req.apikeyId, // gunakan userId sebagai key
+  message: 'Terlalu banyak request, coba lagi nanti.',
+});
 
 // Function to start the WhatsApp bot
 // Untuk melacak siapa yang kirim gambar ke Ghibli
@@ -94,7 +102,7 @@ async function startBot() {
     }
   });
   // API to send message via website for buisines
-  app.post("/api/kirim-pesan", checkApiKeyBuisness, async (req, res) => {
+  app.post("/api/kirim-pesan", checkApiKeyBuisness, userLimiter, async (req, res) => {
     if (!req.body.pesan || !req.body.nomor) {
       return res
         .status(400)
