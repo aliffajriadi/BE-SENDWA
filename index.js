@@ -34,9 +34,9 @@ app.use(express.json());
 
 const userLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 menit
-  max: 15,              // maksimal 15 request per user
+  max: 15, // maksimal 15 request per user
   keyGenerator: (req) => req.apikeyId, // gunakan userId sebagai key
-  message: 'Terlalu banyak request, coba lagi nanti.',
+  message: "Terlalu banyak request, coba lagi nanti.",
 });
 
 // Function to start the WhatsApp bot
@@ -102,25 +102,38 @@ async function startBot() {
     }
   });
   // API to send message via website for buisines
-  app.post("/api/kirim-pesan", checkApiKeyBuisness, userLimiter, async (req, res) => {
-    if (!req.body.pesan || !req.body.nomor) {
-      return res
-        .status(400)
-        .json({ message: "Data tidak lengkap, butuh body pesan dan nomor" });
+  app.post(
+    "/api/kirim-pesan",
+    checkApiKeyBuisness,
+    userLimiter,
+    async (req, res) => {
+      if (!req.body.pesan || !req.body.nomor) {
+        return res
+          .status(400)
+          .json({ message: "Data tidak lengkap, butuh body pesan dan nomor" });
+      }
+      const pesan = req.body.pesan;
+      let nomor = req.body.nomor;
+      if (nomor.startsWith("0")) {
+        nomor = "62" + nomor.slice(1);
+      }
+      const maxLength = 300; // batas maksimal karakter
+      if (pesan.length > maxLength) {
+        return res
+          .status(400)
+          .json({
+            message: `Pesan terlalu panjang! Maksimal ${maxLength} karakter.`,
+          });
+      }
+      try {
+        await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
+        return res.status(200).json({ message: "Pesan berhasil dikirim" });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Pesan gagal dikirim" + error });
+      }
     }
-    const pesan = req.body.pesan;
-    let nomor = req.body.nomor;
-    if (nomor.startsWith("0")) {
-      nomor = "62" + nomor.slice(1);
-    }
-    try {
-      await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
-      return res.status(200).json({ message: "Pesan berhasil dikirim" });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "Pesan gagal dikirim" + error });
-    }
-  });
+  );
   //KIRIM FILE
   app.post(
     "/api/kirim/pdf",
