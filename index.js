@@ -388,9 +388,7 @@ async function startBot() {
     //END BOT GHIBLI
 
     const m = msg.message; // <-- gunakan m untuk referensi pesan
-    const senderNumber =
-      msg.key.senderPn || msg.key.participant || msg.key.remoteJid;
-
+    const senderNumber = msg.key.remoteJidAlt || msg.key.remoteJid;
     const messageType = Object.keys(msg.message)[0];
 
     let messageText = "";
@@ -826,6 +824,30 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       try {
         crudApiKeyBuisness(sock, msg, senderNumber, pesan);
       } catch (error) {}
+    } else if (pesan.startsWith(".free")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", "")
+      );
+      if (!dataProfil) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: daftar,
+        });
+      }
+      if (dataProfil.free_event === false) {
+        return sock.sendMessage(msg.key.remoteJid, {
+          text: `Maaf ${dataProfil.nama}, Kamu hanya bisa claim 1x`
+        })
+      }
+      try {
+        await kirimReaction("🕒");
+        const success = await fitur.daftarHosting(sock, msg, dataProfil);
+        if (!success) {
+          return await kirimReaction("❌");
+        }
+        await kirimReaction("✅");
+      } catch (error) {
+        await kirimPesan(`Gagal Daftar pesan ${error.message}`);
+      }
     }
   });
 }

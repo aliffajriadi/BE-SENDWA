@@ -10,7 +10,7 @@ export const cekPeserta = async (sock, msg) => {
     // Gabungkan semua peserta menjadi satu pesan
     let text = "📋 Daftar Peserta:\n\n";
     for (const user of users) {
-      text += `👉 ${user.nama} (${user.nomor}) - Token: ${user.token}\n`;
+      text += `👉 ${user.name} (${user.nomor}) - Token: ${user.token}\n`;
     }
 
     await sock.sendMessage(msg.key.remoteJid, { text });

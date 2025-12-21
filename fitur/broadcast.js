@@ -7,7 +7,7 @@ export const broadcast = async (sock, msg, rawPesan) => {
         for (const user of dataUser) {
           // 🔥 replace variabel dengan data user
           let pesanKirim = rawPesan
-            .replace(/{nama}/g, user.nama)
+            .replace(/{nama}/g, user.name)
             .replace(/{nomor}/g, user.nomor)
             .replace(/{token}/g, user.token);
 
