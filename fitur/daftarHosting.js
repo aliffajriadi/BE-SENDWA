@@ -49,7 +49,7 @@ Berikut adalah detail login panel kamu:
 └───────────────
 
 🌐 *URL AKSES PANEL:*
-https://panel.aliffajriadi.my.id:8090
+https://panel.aliffajriadi.my.id
 
 👨‍💻 *DOMAIN GRATIS (gunakan saat create website):*
 https://${namaDepan}.free.aliffajriadi.my.id
