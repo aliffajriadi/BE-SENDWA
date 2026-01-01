@@ -17,6 +17,7 @@ import { ghibliHandler } from "./ghibli.js";
 import { sendPesan } from "./annoc-dc.js";
 import { instagramDownloaderDC } from "./meme-dc.js";
 import { daftarHosting } from "./daftarHosting.js";
+import { sendLaporan } from "./PBL/send-laporan.js";
 export {
-    instagramDownloader, daftarHosting, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan
+    instagramDownloader, daftarHosting, sendLaporan, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan
 }

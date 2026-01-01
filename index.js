@@ -848,6 +848,12 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       } catch (error) {
         await kirimPesan(`Gagal Daftar pesan ${error.message}`);
       }
+    } else if (pesan.startsWith("/laporan")) {
+      try {
+        await fitur.sendLaporan(sock, msg, senderNumber, pesan);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim laporan pesan ${error}`);
+      }
     }
   });
 }
