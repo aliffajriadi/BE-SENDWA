@@ -1,6 +1,6 @@
-import { profile } from "../../func"
-import { NomorOwner } from "../../list";
-import prisma from "../../config/db";
+import { profile } from "../../func.js";
+import { NomorOwner } from "../../list.js";
+import prisma from "../../config/db.js";
 
 export const topUp = async (sock, data) => {
     const price = data.price;
