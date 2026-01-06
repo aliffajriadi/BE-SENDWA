@@ -60,7 +60,7 @@ Silakan top up saldo terlebih dahulu.`,
     }
 
     // Update saldo & token (AMAN 🔥)
-    await repository.updateProfile(senderNumber, {
+    await repository.updateProfile(senderNumber.replace("@s.whatsapp.net", ""), {
       saldo: { decrement: totalHarga },
       token: { increment: jumlah },
     });
