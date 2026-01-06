@@ -476,10 +476,13 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
 
 ${
   dataProfil.token <= 0
-    ? `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
+    ? `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Beli Token dengan perintah *.beli token*`
     : `💡 Token kamu aktif!
 Token digunakan untuk mengakses fitur-fitur bot seperti download, stiker, dan lainnya.
 Semakin banyak token = semakin banyak fitur yang bisa kamu pakai!
+
+Ketik *.topup* untuk top up saldo
+ketik *.beli* untuk beli token
 `
 }
 
@@ -549,8 +552,7 @@ Semakin banyak token = semakin banyak fitur yang bisa kamu pakai!
 💎 *Minimal Token Dibutuhkan:* 3  
 📊 *Token Kamu Sekarang:* ${dataProfil.token}
 
-📩 Hubungi *Owner* untuk menambah token:  
-👉 ${NomorOwner} / Alif  
+📩 Beli Token dengan perintah *.beli token*
 
 🪪 *Cek profil dan sisa token kamu:*  
 Ketik *.me*
