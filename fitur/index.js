@@ -18,6 +18,7 @@ import { sendPesan } from "./annoc-dc.js";
 import { instagramDownloaderDC } from "./meme-dc.js";
 import { daftarHosting } from "./daftarHosting.js";
 import { sendLaporan } from "./PBL/send-laporan.js";
+import { topUp } from "./top-up/top-up.js";
 export {
-    instagramDownloader, daftarHosting, sendLaporan, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan
+    instagramDownloader, daftarHosting, sendLaporan, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan, topUp
 }

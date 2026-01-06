@@ -15,7 +15,9 @@ export const getName = async (number) => {
  */
 export const registerNumber = async (number, name, newToken) => {
   const userExists = await prisma.user.findUnique({ where: { nomor: number } });
+  const userNameExists = await prisma.user.findUnique({ where: { name: name } });
   if (userExists) return false;
+  if (userNameExists) return false;
 
   await prisma.user.create({
     data: { nomor: number, name, token: newToken },

@@ -114,11 +114,11 @@ async function startBot() {
       return res.status(401).json({ message: "API key tidak valid" });
     }
     try {
-      console.log(data);
-      // await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
-      return res.status(200).json({ message: "Pesan berhasil dikirim" });
+      await fitur.topUp(sock, data);
+      return res.status(200).json({ message: "Top Up berhasil" });
     } catch (error) {
-      return res.status(500).json({ message: "Pesan gagal dikirim" });
+      console.log(error);
+      return res.status(500).json({ message: "Top Up gagal" });
     }
   });
   // API to send message via website for buisines
@@ -472,6 +472,7 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
 ✨ *Nama*       : ${dataProfil.nama}
 📞 *Nomor*      : ${dataProfil.nomor}
 💎 *Sisa Token* : ${dataProfil.token}
+💰 *Saldo*      : Rp.${dataProfil.saldo}
 
 ${
   dataProfil.token <= 0
