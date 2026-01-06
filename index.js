@@ -660,35 +660,7 @@ Ketik *.me*
         m.imageMessage.caption.toLowerCase().trim() === ".ghibli") ||
       pesan === ".ghibli"
     ) {
-      const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
-      );
-      const minimalToken = 3;
-      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
-      if (!cek) return;
-      if (global.antreGhibli.get("status") === true) {
-        return await kirimPesan(
-          "Tunggu sebentar, fitur ini sedang digunakan oleh orang lain..."
-        );
-      }
-
-      global.antreGhibli.set("status", true);
-      console.log(`🔒 Ghibli dipakai oleh ${dataProfil.nama}`);
-
-      try {
-        await kirimReaction("🕒");
-        const success = await fitur.ghibliHandler(sock, msg);
-        if (!success) {
-          global.antreGhibli.set("status", false);
-          return await kirimReaction("❌");
-        }
-        lessToken(dataProfil.nomor, minimalToken);
-        await kirimReaction("✅");
-      } catch (error) {
-        global.antreGhibli.set("status", false);
-        await kirimPesan(`Gagal kirim pesan ${error.message}`);
-        return await kirimReaction("❌");
-      }
+      await kirimPesan("Fitur ini sedang tahap Maintenance");
     } else if (messageText.startsWith(".dcig")) {
       const pengirim = senderNumber.replace("@s.whatsapp.net", "");
       const userPengirim = await profile(pengirim);
