@@ -102,6 +102,25 @@ async function startBot() {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
+
+  app.post("/api/webhook-payment", async (req, res) => {
+    const data = req.body;
+    const apiKey = req.query.key;
+
+    if (!apiKey) {
+      return res.status(401).json({ message: "API key tidak ditemukan" });
+    }
+    if (apiKey !== process.env.API_KEY) {
+      return res.status(401).json({ message: "API key tidak valid" });
+    }
+    try {
+      console.log(data);
+      // await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
+      return res.status(200).json({ message: "Pesan berhasil dikirim" });
+    } catch (error) {
+      return res.status(500).json({ message: "Pesan gagal dikirim" });
+    }
+  });
   // API to send message via website for buisines
   app.post(
     "/api/kirim-pesan",
