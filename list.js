@@ -118,38 +118,42 @@ const menu = `
 │   ❯ Lihat daftar semua fitur
 ├─ 👤 *.me*
 │   ❯ Lihat profil kamu
+├─ 💰 *.topup*
+│   ❯ Top up Saldo Kamu
+├─ 💰 *.beli*
+│   ❯ Beli fitur dari Bot
 
 📥 *DOWNLOAD MEDIA*
 ├─ 🎵 *.tt [link]*
-│   ❯ Download video TikTok
+│   ❯ Download video TikTok (1 Token)
 ├─ 📸 *.ig [link]*
-│   ❯ Download video Instagram
+│   ❯ Download video Instagram (1 Token)
 ├─ 📖 *.igstory [link]*
-│   ❯ Download Story Instagram
+│   ❯ Download Story Instagram (1 Token)
 
 🎨 *KREASI & EDIT FOTO*
 ├─ 🖼️ *.stiker [foto]*
-│   ❯ Ubah foto jadi stiker
+│   ❯ Ubah foto jadi stiker (1 Token)
 ├─ 🎉 *.ghibli [foto]*
-│   ❯ Ubah foto kamu menjadi Anime Ghibli
+│   ❯ Ubah foto kamu menjadi Anime Ghibli (1 Token)
 ├─ 🧹 *.removebg [foto]*
-│   ❯ Hapus background foto kamu
+│   ❯ Hapus background foto kamu (2 Token)
 ├─ ✨ *.hd [foto]*
-│   ❯ Buat foto jadi HD
+│   ❯ Buat foto jadi HD (1 Token)
 ├─ 🎀 *.brat [text]*
-│   ❯ Buat stiker dengan teks lucu
+│   ❯ Buat stiker dengan teks lucu (1 Token)
 
 💌 *PESAN & SERU-SERUAN*
 ├─ 💌 *.confess [nomor] [pesan]*
-│   ❯ Kirim pesan rahasia ke nomor tujuan
+│   ❯ Kirim pesan rahasia ke nomor tujuan (1 Token)
 ├─ 💖 *.sertifikat [namakamu]*
-│   ❯ Buat sertifikat cinta digital 💞
+│   ❯ Buat sertifikat cinta digital 💞 (1 Token)
 
 🧰 *TOOLS & FUN*
 ├─ 🕹️ *.cekroblok [username]*
-│   ❯ Stalking akun Roblox
+│   ❯ Stalking akun Roblox (1 Token)
 ├─ 🧾 *.qrcode [link]*
-│   ❯ Buat QR Code dari link
+│   ❯ Buat QR Code dari link (1 Token)
 
 ╰─━━━━━━━━━━━━━━━━━━━─╯
 🌟 _Bot siap menemani harimu dengan gaya!_ 🌟

@@ -17,8 +17,8 @@ export const topUp = async (sock, data) => {
     const saldo = user.saldo + price;
     await prisma.user.update({ where: { nomor }, data: { saldo } });
     
-    return sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: `Top Up Saldo Berhasil!
+    return sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: `Top Up Saldo Berhasil ✅!
 
-Top Up Saldo: Rp.${price}
-Total Saldo Sekarang: Rp.${saldo}` });
+Top Up Saldo: *Rp.${price}*
+Total Saldo Sekarang: *Rp.${saldo}*` });
 }

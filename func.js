@@ -10,6 +10,15 @@ export const getName = async (number) => {
   return user ? user.name : null;
 };
 
+// cara pakai updateProfile
+// updateProfile(number, { name: 'nama', token: 10 });
+export const updateProfile = async (number, args) => {
+  return prisma.user.update({
+    where: { nomor: number },
+    data: args,
+  });
+}
+
 /**
  * Registrasi nomor baru
  */
@@ -85,11 +94,11 @@ export const cekToken = async (dataProfil, sock, msg, minimalToken) => {
     sock.sendMessage(msg.key.remoteJid, {
       text: `╭───❌ *TOKEN TIDAK CUKUP* ❌───╮
 😢 Maaf, token kamu *tidak mencukupi* untuk menggunakan fitur ini.  
-💎 *Minimal Token Dibutuhkan:* ${minimalToken}  
+💎 *Minimal Token Dibutuhkan:* ${minimalToken}
 📊 *Token Kamu Sekarang:* ${dataProfil.token}
 
-📩 Hubungi *Owner* untuk menambah token:  
-👉 ${NomorOwner} / Alif  
+📩 Beli Token Murah Kamu dengan cara:
+Ketik *.beli*
 
 🪪 *Cek profil dan sisa token kamu:*  
 Ketik *.me*

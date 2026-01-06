@@ -330,7 +330,7 @@ async function startBot() {
       const lastTime = rateLimitMap.get(senderNumber);
       if (now - lastTime < cooldown) {
         await sock.sendMessage(senderNumber, {
-          text: "⏳ Tunggu beberapa detik, Jangan di spam yahhh 😡",
+          text: "Terlalu banyak permintaan, tunggu 3-5 detik",
         });
         return;
       }
@@ -745,6 +745,18 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
         await fitur.sendLaporan(sock, msg, senderNumber, pesan);
       } catch (error) {
         await kirimPesan(`Gagal kirim laporan pesan ${error}`);
+      }
+    } else if (pesan.startsWith(".topup")) {
+      try {
+        await fitur.tutorTopUp(sock, msg, senderNumber);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim tutor top up pesan ${error}`);
+      }
+    } else if (pesan.startsWith(".beli")) {
+      try {
+        await fitur.beli(sock, msg, senderNumber, pesan);
+      } catch (error) {
+        await kirimPesan(`Gagal kirim beli token pesan ${error}`);
       }
     }
   });

@@ -19,6 +19,8 @@ import { instagramDownloaderDC } from "./meme-dc.js";
 import { daftarHosting } from "./daftarHosting.js";
 import { sendLaporan } from "./PBL/send-laporan.js";
 import { topUp } from "./top-up/top-up.js";
+import { tutorTopUp } from "./top-up/tutor-top-up.js";
+import { beli } from "./beli/beli.js";
 export {
-    instagramDownloader, daftarHosting, sendLaporan, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan, topUp
+    instagramDownloader, daftarHosting, sendLaporan, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan, topUp, tutorTopUp, beli
 }
