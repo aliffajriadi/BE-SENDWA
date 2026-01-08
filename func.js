@@ -23,15 +23,26 @@ export const updateProfile = async (number, args) => {
  * Registrasi nomor baru
  */
 export const registerNumber = async (number, name, newToken) => {
-  const userExists = await prisma.user.findUnique({ where: { nomor: number } });
-  const userNameExists = await prisma.user.findUnique({ where: { name: name } });
-  if (userExists) return false;
-  if (userNameExists) return false;
-
-  await prisma.user.create({
-    data: { nomor: number, name, token: newToken },
+  // Cek apakah nomor SUDAH digunakan oleh siapapun (tanpa peduli namanya)
+  const userExists = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { nomor: number },
+        { name: name }
+      ]
+    }
   });
-  return true;
+
+  if (userExists) return false;
+
+  try {
+    await prisma.user.create({
+      data: { nomor: number, name, token: newToken },
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 /**

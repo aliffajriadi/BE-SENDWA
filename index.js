@@ -372,6 +372,7 @@ async function startBot() {
       messageText.startsWith(".tiktok") ||
       messageText.startsWith(".tt")
     ) {
+      await kirimReaction("🕒");
       const pengirim = await profile(
         senderNumber.replace("@s.whatsapp.net", "")
       );
@@ -393,8 +394,10 @@ Cek profil dan token dengan mengetik .me`,
         const cek = await fitur.tiktokDownloader(query, sock, msg, namaUser);
         if (!cek) return;
         lessToken(senderNumber.replace("@s.whatsapp.net", ""), 1);
+        await kirimReaction("✅");
       } catch (err) {
         console.error("Gagal download TikTok:", err.message);
+        await kirimReaction("❌");
         await sock.sendMessage(
           msg.key.remoteJid,
           {
@@ -408,10 +411,13 @@ Cek profil dan token dengan mengetik .me`,
     } else if (messageText.startsWith(".daftar")) {
       const parts = messageText.split(" ");
       try {
+        await kirimReaction("🕒");
         await fitur.daftarFunc(parts, sock, msg, senderNumber);
+        await kirimReaction("✅");
       } catch (error) {
+        await kirimReaction("❌");
         await sock.sendMessage(msg.key.remoteJid, {
-          text: "❌ Gagal mendaftar. Coba lagi nanti.",
+          text: "❌ Gagal mendaftar. Silahkan Gunakan Nama Lain dan Coba Lagi.",
         });
       }
     }
@@ -437,9 +443,11 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       }
       const query = messageText.split(" ")[1];
       try {
+        await kirimReaction("🕒");
         const cek = await fitur.instagramDownloader(query, sock, msg, namaUser);
         if (!cek) return;
         lessToken(pengirim, 1);
+        await kirimReaction("✅");
       } catch (e) {
         console.error("Gagal download Instagram:", e.message);
         await sock.sendMessage(msg.key.remoteJid, {
@@ -497,7 +505,9 @@ ketik *.beli* untuk beli token
         await kirimPesan("Gagal Menambahkan token" + error.message);
       }
     } else if (pesan === ".menu") {
+      await kirimReaction("🕒");
       await kirimPesan(menu);
+      await kirimReaction("✅");
     } else if (
       m.imageMessage &&
       (m.imageMessage.caption || "").toLowerCase().trim() === ".stiker"
