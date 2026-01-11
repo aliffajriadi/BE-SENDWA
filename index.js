@@ -105,6 +105,7 @@ async function startBot() {
       await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
       return res.status(200).json({ message: "Pesan berhasil dikirim" });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({ message: "Pesan gagal dikirim" });
     }
   });
