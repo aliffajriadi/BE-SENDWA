@@ -40,9 +40,6 @@ const userLimiter = rateLimit({
   message: "Terlalu banyak request, coba lagi nanti.",
 });
 
-// Function to start the WhatsApp bot
-// Untuk melacak siapa yang kirim gambar ke Ghibli
-global.antreGhibli = new Map();
 let version;
 try {
   const { version: waVersion } = await fetchLatestWaWebVersion();
@@ -50,51 +47,69 @@ try {
 } catch {
   version = [2, 3000, 1015901307]; // Fallback version
 }
+let sock;
+let connecting = false;
 async function startBot() {
-  const { state, saveCreds } = await useMultiFileAuthState("auth");
-  const sock = makeWASocket({
-    version,
-    printQRInTerminal: true,
-    auth: state,
-    browser: ["Bot WhatsApp", "Chrome", "1.0.0"],
-  });
+  if (connecting) return;
+  connecting = true;
+  try {
+    const { state, saveCreds } = await useMultiFileAuthState("auth");
+    sock = makeWASocket({
+      version,
+      printQRInTerminal: true,
+      auth: state,
+      browser: ["Bot WhatsApp", "Chrome", "1.0.0"],
+    });
 
-  // Save credentials on update
-  sock.ev.on("creds.update", saveCreds);
+    // Save credentials on update
+    sock.ev.on("creds.update", saveCreds);
 
-  // Handle connection updates
-  sock.ev.on("connection.update", async (update) => {
-    const { connection, lastDisconnect, qr } = update;
+    // Handle connection updates
+    sock.ev.on("connection.update", async (update) => {
+      const { connection, lastDisconnect, qr } = update;
 
-    if (connection === "close") {
-      const shouldReconnect =
-        lastDisconnect?.error instanceof Boom
-          ? lastDisconnect.error.output?.statusCode !==
-            DisconnectReason.loggedOut
-          : true;
+      if (connection === "close") {
+        const shouldReconnect =
+          lastDisconnect?.error instanceof Boom
+            ? lastDisconnect.error.output?.statusCode !==
+              DisconnectReason.loggedOut
+            : true;
 
-      console.log("Koneksi terputus karena:", lastDisconnect.error);
+        console.log("Koneksi terputus karena:", lastDisconnect.error);
 
-      if (shouldReconnect) {
-        console.log("Mencoba menghubungkan kembali...");
-        startBot();
-      } else {
-        console.log("Koneksi ditutup. Menghapus kredensial...");
-        if (fs.existsSync("./auth")) {
-          fs.rmSync("./auth", { recursive: true, force: true });
+        if (shouldReconnect) {
+          console.log("Mencoba menghubungkan kembali dalam 5 detik...");
+          setTimeout(startBot, 5000);
+        } else {
+          console.log("Koneksi ditutup. Menghapus kredensial...");
+          if (fs.existsSync("./auth")) {
+            fs.rmSync("./auth", { recursive: true, force: true });
+          }
         }
       }
-    }
 
-    if (connection === "open") {
-      console.log("Koneksi terbuka, bot sudah siap digunakan!");
-    }
+      if (connection === "open") {
+        console.log("Koneksi terbuka, bot sudah siap digunakan!");
+        connecting = false;
+      }
 
-    if (qr) {
-      console.log("Scan QR Code berikut untuk login:");
-      qrcode.generate(qr, { small: true });
-    }
-  });
+      if (qr) {
+        console.log("Scan QR Code berikut untuk login:");
+        qrcode.generate(qr, { small: true });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    connecting = false;
+    setTimeout(startBot, 5000);
+  }
+  async function sendMessageSafe(jid, message) {
+  if (!sock || sock.ws.readyState !== sock.ws.OPEN) {
+    console.log("Socket belum siap, tunggu 3 detik...");
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+  return sock.sendMessage(jid, message);
+}
 
   /////////////////////////////////////////////////////////////////////////////
   // API to send message via website personal
@@ -102,7 +117,7 @@ async function startBot() {
     const pesan = req.body.pesan;
     const nomor = req.body.nomor;
     try {
-      await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
+      await sendMessageSafe(`${nomor}@s.whatsapp.net`, { text: pesan });
       return res.status(200).json({ message: "Pesan berhasil dikirim" });
     } catch (error) {
       console.log(error);
@@ -151,7 +166,7 @@ async function startBot() {
         });
       }
       try {
-        await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
+        await sendMessageSafe(`${nomor}@s.whatsapp.net`, { text: pesan });
         return res.status(200).json({ message: "Pesan berhasil dikirim" });
       } catch (error) {
         console.log(error);
@@ -174,7 +189,7 @@ async function startBot() {
         }
 
         // kirim dokumen ke WhatsApp
-        await sock.sendMessage(`${nomor}@s.whatsapp.net`, {
+        await sendMessageSafe(`${nomor}@s.whatsapp.net`, {
           document: file.buffer, // langsung buffer dari upload
           mimetype: file.mimetype || "application/pdf",
           fileName: file.originalname || "dokumen.pdf",
