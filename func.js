@@ -157,3 +157,23 @@ export const dataos = {
   totalmem: os.totalmem(),
   freemem: os.freemem(),
 };
+
+// Fungsi untuk mengirim pesan dengan retry
+export async function sendMessageSafe(sock, jid, message, retries = 5, delayMs = 3000) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        if (!sock || sock.ws.readyState !== sock.ws.OPEN) {
+          console.log("Socket belum siap, tunggu 3 detik...");
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          continue; // cek lagi socket
+        }
+        return await sock.sendMessage(jid, message); // berhasil
+      } catch (err) {
+        console.log(
+          `Gagal kirim pesan ke ${jid}, percobaan ke-${i + 1}: ${err.message}`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    throw new Error(`Gagal kirim pesan ke ${jid} setelah ${retries} percobaan`);
+  }

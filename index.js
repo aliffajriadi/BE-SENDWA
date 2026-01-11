@@ -13,7 +13,7 @@ import qrcode from "qrcode-terminal";
 import fs from "fs";
 import { kataKotor, simpleReplies, NomorOwner, menu, daftar } from "./list.js";
 import { configDotenv } from "dotenv";
-import { profile, lessToken, cekToken } from "./func.js";
+import { profile, lessToken, cekToken, sendMessageSafe } from "./func.js";
 import multer from "multer";
 import * as fitur from "./fitur/index.js";
 import { checkApiKey, checkApiKeyBuisness } from "./helper/apiKey.js";
@@ -103,13 +103,6 @@ async function startBot() {
     connecting = false;
     setTimeout(startBot, 5000);
   }
-  async function sendMessageSafe(jid, message) {
-  if (!sock || sock.ws.readyState !== sock.ws.OPEN) {
-    console.log("Socket belum siap, tunggu 3 detik...");
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
-  return sock.sendMessage(jid, message);
-}
 
   /////////////////////////////////////////////////////////////////////////////
   // API to send message via website personal
@@ -117,7 +110,7 @@ async function startBot() {
     const pesan = req.body.pesan;
     const nomor = req.body.nomor;
     try {
-      await sendMessageSafe(`${nomor}@s.whatsapp.net`, { text: pesan });
+      await sendMessageSafe(sock, `${nomor}@s.whatsapp.net`, { text: pesan });
       return res.status(200).json({ message: "Pesan berhasil dikirim" });
     } catch (error) {
       console.log(error);
@@ -166,7 +159,7 @@ async function startBot() {
         });
       }
       try {
-        await sendMessageSafe(`${nomor}@s.whatsapp.net`, { text: pesan });
+        await sendMessageSafe(sock, `${nomor}@s.whatsapp.net`, { text: pesan });
         return res.status(200).json({ message: "Pesan berhasil dikirim" });
       } catch (error) {
         console.log(error);
@@ -189,7 +182,7 @@ async function startBot() {
         }
 
         // kirim dokumen ke WhatsApp
-        await sendMessageSafe(`${nomor}@s.whatsapp.net`, {
+        await sendMessageSafe(sock, `${nomor}@s.whatsapp.net`, {
           document: file.buffer, // langsung buffer dari upload
           mimetype: file.mimetype || "application/pdf",
           fileName: file.originalname || "dokumen.pdf",
@@ -208,7 +201,7 @@ async function startBot() {
     const pesan = req.body.pesan;
     const nomor = req.body.nomor;
     try {
-      await sock.sendMessage(`${nomor}@g.us`, { text: pesan });
+      await sendMessageSafe(sock, `${nomor}@g.us`, { text: pesan });
       return res.status(200).json({ message: "Pesan berhasil dikirim" });
     } catch (error) {
       return res.status(500).json({ message: "Pesan gagal dikirim" });
