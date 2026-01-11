@@ -43,7 +43,13 @@ const userLimiter = rateLimit({
 // Function to start the WhatsApp bot
 // Untuk melacak siapa yang kirim gambar ke Ghibli
 global.antreGhibli = new Map();
-const { version } = await fetchLatestWaWebVersion();
+let version;
+try {
+  const { version: waVersion } = await fetchLatestWaWebVersion();
+  version = waVersion;
+} catch {
+  version = [2, 3000, 1015901307]; // Fallback version
+}
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
   const sock = makeWASocket({
@@ -139,11 +145,9 @@ async function startBot() {
       }
       const maxLength = 300; // batas maksimal karakter
       if (pesan.length > maxLength) {
-        return res
-          .status(400)
-          .json({
-            message: `Pesan terlalu panjang! Maksimal ${maxLength} karakter.`,
-          });
+        return res.status(400).json({
+          message: `Pesan terlalu panjang! Maksimal ${maxLength} karakter.`,
+        });
       }
       try {
         await sock.sendMessage(`${nomor}@s.whatsapp.net`, { text: pesan });
@@ -287,35 +291,75 @@ async function startBot() {
   const rateLimitMap = new Map();
 
   // Handle incoming messages
-  sock.ev.on("messages.upsert", async ({ messages }) => {
+  sock.ev.on("messages.upsert", async ({ messages, type }) => {
+    if (type !== "notify") return;
     const msg = messages[0];
     if (!msg.message) return;
-    if (msg.key.remoteJid === "status@broadcast" || !msg.message) return;
-    // Cek jika pengirim adalah bot sendiri
+
+    const jid = msg.key.remoteJid;
+    if (jid === "status@broadcast") return;
+
+    // Cek jika pengirim adalah bot sendiri (normalize user first)
+    const botId = jidNormalizedUser(sock.user.id);
     if (msg.key.fromMe) return;
 
     // Hindari duplikasi di grup: hanya tangani jika pengirimnya bukan sistem
-    if (msg.key.participant && msg.key.remoteJid.endsWith("@g.us")) {
-      if (msg.key.participant === sock.user.id) return;
+    if (msg.key.participant && jid.endsWith("@g.us")) {
+      if (jidNormalizedUser(msg.key.participant) === botId) return;
     }
 
-    const m = msg.message; // <-- gunakan m untuk referensi pesan
-    const pn = msg.key.remoteJidAlt || msg.key.remoteJid;
-    let senderNumber;
-    if (pn.endsWith("@lid")) {
-      const a = await sock.signalRepository.lidMapping.getPNForLID(pn);
-      senderNumber = jidNormalizedUser(a);
-    } else {
-      senderNumber = pn;
-    }
-    const messageType = Object.keys(msg.message)[0];
+    const m = msg.message;
 
+    // Prioritaskan PN (Phone Number) jika tersedia
+    let rawJid = msg.key.remoteJid;
+    let senderNumber = jidNormalizedUser(rawJid);
+
+    // Cek senderPn di message key (sering ada di v6 untuk LID)
+    if (msg.key.senderPn) {
+      senderNumber = jidNormalizedUser(msg.key.senderPn);
+    }
+    // Jika tidak ada di senderPn, coba remoteJidAlt
+    else if (
+      msg.key.remoteJidAlt &&
+      msg.key.remoteJidAlt.endsWith("@s.whatsapp.net")
+    ) {
+      senderNumber = jidNormalizedUser(msg.key.remoteJidAlt);
+    }
+    // Terakhir, coba mapping manual jika masih LID
+    else if (senderNumber.endsWith("@lid")) {
+      try {
+        const pn = await sock.signalRepository?.lidMapping?.getPNForLID(
+          senderNumber
+        );
+        if (pn) {
+          senderNumber = jidNormalizedUser(pn);
+        }
+      } catch (e) {
+        console.error("Gagal mapping LID ke PN:", e.message);
+      }
+    }
+
+    // Ekstrak teks dari berbagai tipe pesan
+    const messageType = Object.keys(m)[0];
     let messageText = "";
+
     if (messageType === "conversation") {
-      messageText = msg.message.conversation;
+      messageText = m.conversation;
     } else if (messageType === "extendedTextMessage") {
-      messageText = msg.message.extendedTextMessage.text;
+      messageText = m.extendedTextMessage.text;
+    } else if (messageType === "imageMessage") {
+      messageText = m.imageMessage.caption;
+    } else if (messageType === "videoMessage") {
+      messageText = m.videoMessage.caption;
+    } else if (messageType === "templateButtonReplyMessage") {
+      messageText = m.templateButtonReplyMessage.selectedId;
+    } else if (messageType === "buttonsResponseMessage") {
+      messageText = m.buttonsResponseMessage.selectedButtonId;
+    } else if (messageType === "listResponseMessage") {
+      messageText = m.listResponseMessage.singleSelectReply.selectedRowId;
     }
+
+    if (!messageText) messageText = "";
 
     console.log(`Pesan dari ${senderNumber}: ${messageText}`);
 
@@ -739,8 +783,8 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       }
       if (dataProfil.free_event === false) {
         return sock.sendMessage(msg.key.remoteJid, {
-          text: `Maaf ${dataProfil.nama}, Kamu hanya bisa claim 1x`
-        })
+          text: `Maaf ${dataProfil.nama}, Kamu hanya bisa claim 1x`,
+        });
       }
       try {
         await kirimReaction("🕒");
