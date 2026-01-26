@@ -105,6 +105,10 @@ async function startBot() {
     setTimeout(startBot, 5000);
   }
 
+  app.get("/", async (req, res) => {
+    res.send("WELCOME TO BOT WA");
+  });
+
   /////////////////////////////////////////////////////////////////////////////
   // API to send message via website personal
   app.post("/api/kirim", checkApiKey, async (req, res) => {
