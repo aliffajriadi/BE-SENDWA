@@ -20,6 +20,7 @@ import { checkApiKey, checkApiKeyBuisness } from "./helper/apiKey.js";
 import * as query from "./helper/crud-Key.js";
 import { crudApiKeyBuisness } from "./fitur/apiKeyBisnis.js";
 import rateLimit from "express-rate-limit";
+import { web } from "./web/web.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -32,6 +33,7 @@ try {
 const app = express();
 app.use(cors());
 app.use(express.json());
+web(app);
 
 const userLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 menit
@@ -105,10 +107,6 @@ async function startBot() {
     setTimeout(startBot, 5000);
   }
 
-  app.get("/", async (req, res) => {
-    res.send("WELCOME TO BOT WA");
-  });
-
   /////////////////////////////////////////////////////////////////////////////
   // API to send message via website personal
   app.post("/api/kirim", checkApiKey, async (req, res) => {
@@ -170,7 +168,7 @@ async function startBot() {
         console.log(error);
         return res.status(500).json({ message: "Pesan gagal dikirim" + error });
       }
-    }
+    },
   );
   //KIRIM FILE
   app.post(
@@ -199,7 +197,7 @@ async function startBot() {
         console.error(error);
         return res.status(500).json({ message: "Gagal kirim PDF" });
       }
-    }
+    },
   );
   //GRUB
   app.post("/api/grub", checkApiKey, async (req, res) => {
@@ -227,7 +225,7 @@ async function startBot() {
         const participants = metadata.participants;
 
         console.log(
-          `📢 Menyiarkan pesan ke ${participants.length} anggota grup...`
+          `📢 Menyiarkan pesan ke ${participants.length} anggota grup...`,
         );
 
         for (const participant of participants) {
@@ -342,9 +340,8 @@ async function startBot() {
     // Terakhir, coba mapping manual jika masih LID
     else if (senderNumber.endsWith("@lid")) {
       try {
-        const pn = await sock.signalRepository?.lidMapping?.getPNForLID(
-          senderNumber
-        );
+        const pn =
+          await sock.signalRepository?.lidMapping?.getPNForLID(senderNumber);
         if (pn) {
           senderNumber = jidNormalizedUser(pn);
         }
@@ -399,7 +396,7 @@ async function startBot() {
       await sock.sendMessage(
         msg.key.remoteJid,
         { text: pesan },
-        { quoted: msg }
+        { quoted: msg },
       );
     };
     const kirimReaction = async (emoji) => {
@@ -418,7 +415,7 @@ async function startBot() {
         {
           text: `sopan dikit boss`,
         },
-        { quoted: msg }
+        { quoted: msg },
       );
     } else if (simpleReplies[pesan]) {
       await sock.sendMessage(senderNumber, { text: simpleReplies[pesan] });
@@ -432,7 +429,7 @@ async function startBot() {
     ) {
       await kirimReaction("🕒");
       const pengirim = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       if (!pengirim) {
         return sock.sendMessage(msg.key.remoteJid, {
@@ -461,7 +458,7 @@ Cek profil dan token dengan mengetik .me`,
           {
             text: "❌ Gagal download video TikTok. Pastikan link valid dan coba lagi.",
           },
-          { quoted: msg }
+          { quoted: msg },
         );
       }
 
@@ -518,13 +515,13 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
         await fitur.cekServer(sock, msg);
       } catch (error) {
         await kirimPesan(
-          "❌ Terjadi kesalahan saat mengambil informasi server. Coba lagi nanti."
+          "❌ Terjadi kesalahan saat mengambil informasi server. Coba lagi nanti.",
         );
       }
       //PROFIL INFO
     } else if (pesan === ".me") {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       if (!dataProfil) {
         return await sock.sendMessage(msg.key.remoteJid, {
@@ -571,14 +568,14 @@ ketik *.beli* untuk beli token
       (m.imageMessage.caption || "").toLowerCase().trim() === ".stiker"
     ) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       if (!dataProfil) {
         return await kirimPesan(daftar);
       }
       if (dataProfil.token <= 0) {
         return await kirimPesan(
-          `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`
+          `⚠️ _Token kamu sudah *habis*_ 😢\n📩 Hubungi *Owner* untuk menambah token 😉 \n ${NomorOwner} / alif`,
         );
       }
       try {
@@ -607,7 +604,7 @@ ketik *.beli* untuk beli token
       (m.imageMessage.caption || "").toLowerCase().trim() === ".removebg"
     ) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       if (!dataProfil) {
         return await kirimPesan(daftar);
@@ -625,7 +622,7 @@ ketik *.beli* untuk beli token
 🪪 *Cek profil dan sisa token kamu:*  
 Ketik *.me*
 
-╰────────────────────────────╯`
+╰────────────────────────────╯`,
         );
       }
       try {
@@ -638,14 +635,14 @@ Ketik *.me*
         await sock.sendMessage(
           m.key.remoteJid,
           { text: `❌ RemoveBG Error: ${error}` },
-          { quoted: m }
+          { quoted: m },
         );
       }
     } else if (pesan === ".removebg") {
       await kirimPesan("Kirim gambar dengan caption .removebg");
     } else if (pesan.startsWith(".cekroblok")) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       const minimalToken = 2;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
@@ -660,7 +657,7 @@ Ketik *.me*
       }
     } else if (pesan.startsWith(".sertifikat")) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
@@ -673,7 +670,7 @@ Ketik *.me*
       }
     } else if (pesan.startsWith(".confess")) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
@@ -690,7 +687,7 @@ Ketik *.me*
       (m.imageMessage.caption || "").toLowerCase().trim() === ".hd"
     ) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
@@ -703,7 +700,7 @@ Ketik *.me*
     } else if (pesan === ".cekpeserta") {
       if (senderNumber.replace("@s.whatsapp.net", "") !== NomorOwner) {
         return await kirimPesan(
-          "Anda bukan owner, lappet jangan aneh aneh kau"
+          "Anda bukan owner, lappet jangan aneh aneh kau",
         );
       }
       try {
@@ -713,7 +710,7 @@ Ketik *.me*
       }
     } else if (pesan.startsWith(".qrcode")) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
@@ -728,7 +725,7 @@ Ketik *.me*
       }
     } else if (pesan.startsWith(".brat")) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       const minimalToken = 1;
       const cek = await cekToken(dataProfil, sock, msg, minimalToken);
@@ -773,7 +770,7 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
           query,
           sock,
           msg,
-          namaUser
+          namaUser,
         );
         if (!cek) return;
       } catch (e) {
@@ -788,7 +785,7 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       } catch (error) {}
     } else if (pesan.startsWith(".free")) {
       const dataProfil = await profile(
-        senderNumber.replace("@s.whatsapp.net", "")
+        senderNumber.replace("@s.whatsapp.net", ""),
       );
       if (!dataProfil) {
         return sock.sendMessage(msg.key.remoteJid, {
