@@ -20,5 +20,7 @@ export const topUp = async (sock, data, sendMessageSafe) => {
     return sendMessageSafe(sock, `${nomor}@s.whatsapp.net`, { text: `Top Up Saldo Berhasil ✅!
 
 Top Up Saldo: *Rp.${price}*
-Total Saldo Sekarang: *Rp.${saldo}*` });
+Total Saldo Sekarang: *Rp.${saldo}*
+
+Untuk menngecek saldo, ketik *.me*` });
 }
