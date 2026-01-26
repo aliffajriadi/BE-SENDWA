@@ -69,6 +69,7 @@ async function startBot() {
       const { connection, lastDisconnect, qr } = update;
 
       if (connection === "close") {
+        connecting = false;
         const shouldReconnect =
           lastDisconnect?.error instanceof Boom
             ? lastDisconnect.error.output?.statusCode !==
