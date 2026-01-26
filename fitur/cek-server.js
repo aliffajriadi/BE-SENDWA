@@ -38,7 +38,7 @@ export const cekServer = async (sock, msg) => {
 *🧠 MEMORY USAGE*
 • *Total RAM* : ${totalMem} GB
 • *Used RAM* : ${usedMem} GB (${memUsagePercent}%)
-• *Free RAM* : ${freeMem} GB
+• *Free RAM* : ${freeMem} GB.
 
 *⏳ UP TIME*
 • ${days} Hari, ${hours} Jam, ${minutes} Menit, ${seconds} Detik
