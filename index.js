@@ -132,7 +132,7 @@ async function startBot() {
       return res.status(401).json({ message: "API key tidak valid" });
     }
     try {
-      await fitur.topUp(sock, data);
+      await fitur.topUp(sock, data, sendMessageSafe);
       return res.status(200).json({ message: "Top Up berhasil" });
     } catch (error) {
       console.log(error);
