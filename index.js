@@ -30,6 +30,9 @@ try {
   global.WebSocket = (await import("ws")).default;
 } catch {}
 
+global.confessChat = new Map();
+global.pendingConfess = new Map();
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -399,6 +402,7 @@ async function startBot() {
         { quoted: msg },
       );
     };
+
     const kirimReaction = async (emoji) => {
       await sock.sendMessage(msg.key.remoteJid, {
         react: {
@@ -407,6 +411,31 @@ async function startBot() {
         },
       });
     };
+
+    // Forward messages if in active confess chat
+    const userNumPart = senderNumber.split("@")[0];
+    const lidNumPart = msg.key.remoteJid.split("@")[0];
+    const isConfessUser =
+      global.confessChat.has(userNumPart) || global.confessChat.has(lidNumPart);
+
+    if (isConfessUser) {
+      const currentSessionId = global.confessChat.has(userNumPart)
+        ? userNumPart
+        : lidNumPart;
+      const partnerNum = global.confessChat.get(currentSessionId);
+      if (pesan === "/stop") {
+        await fitur.stopConfess(sock, msg, senderNumber);
+        return;
+      }
+      // Forward any text message (unless it's another command maybe? but usually keep it simple)
+      if (messageText && !messageText.startsWith(".")) {
+        await sock.sendMessage(partnerNum + "@s.whatsapp.net", {
+          text: `📩 *Pesan Confess:* ${messageText}`,
+        });
+        await kirimReaction("📤");
+        return;
+      }
+    }
 
     // Deteksi kata kotor
     if (kataKotor.some((kata) => pesan.includes(kata))) {
@@ -669,6 +698,32 @@ Ketik *.me*
         await kirimPesan(`Gagal kirim pesan ${error.message}`);
       }
     } else if (pesan.startsWith(".confess")) {
+      const dataProfil = await profile(
+        senderNumber.replace("@s.whatsapp.net", ""),
+      );
+      const minimalToken = 5;
+      const cek = await cekToken(dataProfil, sock, msg, minimalToken);
+      if (!cek) return;
+      try {
+        const success = await fitur.confessChatHandler(
+          sock,
+          msg,
+          messageText,
+          senderNumber,
+        );
+        if (success) {
+          lessToken(dataProfil.nomor, minimalToken);
+        }
+      } catch (error) {
+        await kirimPesan(`Gagal confess chat: ${error.message}`);
+      }
+    } else if (pesan === "/terima") {
+      await fitur.terimaConfess(sock, msg, senderNumber);
+    } else if (pesan === "/tolak") {
+      await fitur.tolakConfess(sock, msg, senderNumber);
+    } else if (pesan === "/stop") {
+      await fitur.stopConfess(sock, msg, senderNumber);
+    } else if (pesan.startsWith(".pesanconfess")) {
       const dataProfil = await profile(
         senderNumber.replace("@s.whatsapp.net", ""),
       );

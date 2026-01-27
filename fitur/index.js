@@ -21,6 +21,38 @@ import { sendLaporan } from "./PBL/send-laporan.js";
 import { topUp } from "./top-up/top-up.js";
 import { tutorTopUp } from "./top-up/tutor-top-up.js";
 import { beli } from "./beli/beli.js";
+import {
+  confessChatHandler,
+  terimaConfess,
+  tolakConfess,
+  stopConfess,
+} from "./confesschat.js";
 export {
-    instagramDownloader, daftarHosting, sendLaporan, instagramDownloaderDC, tiktokDownloader, daftarFunc, cekServer, broadcast, createStiker, tokenManage, removebgHandler, robloxStalk, sertifikatCintaHandler, confessHandler, upscaleHandler, cekPeserta, qrcodeHandler, bratvidHandler, ghibliHandler, sendPesan, topUp, tutorTopUp, beli
-}
+  instagramDownloader,
+  daftarHosting,
+  sendLaporan,
+  instagramDownloaderDC,
+  tiktokDownloader,
+  daftarFunc,
+  cekServer,
+  broadcast,
+  createStiker,
+  tokenManage,
+  removebgHandler,
+  robloxStalk,
+  sertifikatCintaHandler,
+  confessHandler,
+  upscaleHandler,
+  cekPeserta,
+  qrcodeHandler,
+  bratvidHandler,
+  ghibliHandler,
+  sendPesan,
+  topUp,
+  tutorTopUp,
+  beli,
+  confessChatHandler,
+  terimaConfess,
+  tolakConfess,
+  stopConfess,
+};

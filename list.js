@@ -59,7 +59,7 @@ const simpleReplies = {
   "dc lee": "ayo aja gw mah 😁",
   "dc le": "ayo aja gw mah 😁",
   padim: "tekno le",
-  "tamor": "tamor trusss kuntulll"
+  tamor: "tamor trusss kuntulll",
 };
 const jadwal = {
   ".senin": `📌 *Senin - IF 2D*
@@ -108,7 +108,7 @@ const jadwal = {
   2. BIngKom - BY - GU 701  
   🕘 14.‌30 sd 17.‌00`,
 };
-const NomorOwner = "62895603792033"
+const NomorOwner = "62895603792033";
 
 const menu = `
 ╭─━━━✦ *🤖 MENU UTAMA* ✦━━━─╮
@@ -145,7 +145,9 @@ const menu = `
 
 💌 *PESAN & SERU-SERUAN*
 ├─ 💌 *.confess [nomor] [pesan]*
-│   ❯ Kirim pesan rahasia ke nomor tujuan (1 Token)
+│   ❯ Ngobrol rahasia ke nomor tujuan (5 Token)
+├─ 💬 *.pesanconfess [nomor] [pesan]*
+│   ❯ Pesan rahasia ke nomor tujuan (1 Token)
 ├─ 💖 *.sertifikat [namakamu]*
 │   ❯ Buat sertifikat cinta digital 💞 (1 Token)
 
@@ -159,9 +161,6 @@ const menu = `
 🌟 _Bot siap menemani harimu dengan gaya!_ 🌟
 `;
 
-
-
-
 const daftar = `⚠️ *Nomor kamu belum terdaftar!*
 
 📝 Silakan daftar dengan format:
@@ -172,6 +171,6 @@ Contoh:
 
 
 Cek daftar menu dengan:
-\`.menu\``
+\`.menu\``;
 
 export { kataKotor, jadwal, simpleReplies, NomorOwner, menu, daftar };
