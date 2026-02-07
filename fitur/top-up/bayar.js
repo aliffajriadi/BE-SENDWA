@@ -143,7 +143,7 @@ export const bayar = async (sock, senderNumber, pesan) => {
       } catch (err) {
         console.log("Pesan sudah dihapus oleh user.");
       }
-    }, 5000);
+    }, 180000);
   } catch (error) {
     console.error("ERROR PADA FUNGSI BAYAR:", error);
     await sock.sendMessage(senderNumber, {
