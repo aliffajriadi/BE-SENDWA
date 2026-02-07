@@ -20,7 +20,7 @@ import { daftarHosting } from "./daftarHosting.js";
 import { sendLaporan } from "./PBL/send-laporan.js";
 import { topUp } from "./top-up/top-up.js";
 import { tutorTopUp } from "./top-up/tutor-top-up.js";
-import { bayar } from "./top-up/bayar.js";
+import { bayar, webhookPayment } from "./top-up/bayar.js";
 import {
   confessChatHandler,
   terimaConfess,
@@ -52,6 +52,7 @@ export {
   topUp,
   tutorTopUp,
   bayar,
+  webhookPayment,
   confessChatHandler,
   terimaConfess,
   tolakConfess,
