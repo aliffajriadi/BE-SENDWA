@@ -24,3 +24,8 @@ Total Saldo Sekarang: *Rp.${saldo}*
 
 Untuk menngecek saldo, ketik *.me*` });
 }
+
+export const topUpQris = async (sock, data, sendMessageSafe) => {
+    
+
+}

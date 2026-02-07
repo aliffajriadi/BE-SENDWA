@@ -13,9 +13,30 @@ model User {
   token Int
   saldo Int @default(0)
   free_event Boolean @default(true)
+  payments Payment[]
   @@map("users")
 }
 
+model Payment {
+  id Int @id @default(autoincrement())
+  user_id        String
+  user           User     @relation(fields: [user_id], references: [nomor], onDelete: Cascade)
+  payment_number String
+  amount Int
+  status String
+  fee Int
+  total_payment Int
+  payment_method String
+  order_id String @unique
+  product_buy String
+  product_price Int
+  product_quantity Int
+  msg_id String
+  expired_at DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("payments")
+}
 
 model ApiKey {
   id String @unique

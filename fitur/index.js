@@ -11,7 +11,7 @@ import { sertifikatCintaHandler } from "./sertifcinta.js";
 import { confessHandler } from "./confess.js";
 import { upscaleHandler } from "./hdfoto.js";
 import { cekPeserta } from "./cekPeserta.js";
-import { qrcodeHandler } from "./link-qrcode.js";
+import { qrcodeHandler, qrcodeGenerate } from "./link-qrcode.js";
 import { bratvidHandler } from "./bratvid.js";
 import { ghibliHandler } from "./ghibli.js";
 import { sendPesan } from "./annoc-dc.js";
@@ -20,7 +20,7 @@ import { daftarHosting } from "./daftarHosting.js";
 import { sendLaporan } from "./PBL/send-laporan.js";
 import { topUp } from "./top-up/top-up.js";
 import { tutorTopUp } from "./top-up/tutor-top-up.js";
-import { beli } from "./beli/beli.js";
+import { bayar } from "./top-up/bayar.js";
 import {
   confessChatHandler,
   terimaConfess,
@@ -42,6 +42,7 @@ export {
   robloxStalk,
   sertifikatCintaHandler,
   confessHandler,
+  qrcodeGenerate,
   upscaleHandler,
   cekPeserta,
   qrcodeHandler,
@@ -50,7 +51,7 @@ export {
   sendPesan,
   topUp,
   tutorTopUp,
-  beli,
+  bayar,
   confessChatHandler,
   terimaConfess,
   tolakConfess,

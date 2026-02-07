@@ -30,3 +30,20 @@ export const qrcodeHandler = async (sock, msg, args) => {
     
   }
 };
+
+export const qrcodeGenerate = async (code) => {
+  try {
+    const qrBuffer = await QRCode.toBuffer(code, {
+      type: "png",
+      width: 300,
+      margin: 2,
+      errorCorrectionLevel: "H",
+    });
+    return qrBuffer;
+  } catch (err) {
+    console.error("QR Code Error:", err);
+    throw new Error(err);
+    
+  }
+};
+

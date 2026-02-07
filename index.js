@@ -21,6 +21,7 @@ import * as query from "./helper/crud-Key.js";
 import { crudApiKeyBuisness } from "./fitur/apiKeyBisnis.js";
 import rateLimit from "express-rate-limit";
 import { web } from "./web/web.js";
+import paksir from "./config/payment/index.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -136,6 +137,25 @@ async function startBot() {
     }
     try {
       await fitur.topUp(sock, data, sendMessageSafe);
+      return res.status(200).json({ message: "Top Up berhasil" });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Top Up gagal" });
+    }
+  });
+
+  app.post("/api/webhook2-payment", async (req, res) => {
+    const data = req.body;
+    const apiKey = req.query.key;
+
+    if (!apiKey) {
+      return res.status(401).json({ message: "API key tidak ditemukan" });
+    }
+    if (apiKey !== process.env.API_KEY) {
+      return res.status(401).json({ message: "API key tidak valid" });
+    }
+    try {
+      await fitur.webhookPayment(sock, sendMessageSafe, data);
       return res.status(200).json({ message: "Top Up berhasil" });
     } catch (error) {
       console.log(error);
@@ -564,7 +584,6 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
 ✨ *Nama*       : ${dataProfil.nama}
 📞 *Nomor*      : ${dataProfil.nomor}
 💎 *Sisa Token* : ${dataProfil.token}
-💰 *Saldo*      : Rp.${dataProfil.saldo}
 
 ${
   dataProfil.token <= 0
@@ -573,7 +592,6 @@ ${
 Token digunakan untuk mengakses fitur-fitur bot seperti download, stiker, dan lainnya.
 Semakin banyak token = semakin banyak fitur yang bisa kamu pakai!
 
-Ketik *.topup* untuk top up saldo
 ketik *.beli* untuk beli token
 `
 }
@@ -876,9 +894,9 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       }
     } else if (pesan.startsWith(".beli")) {
       try {
-        await fitur.beli(sock, msg, senderNumber, pesan);
+        await fitur.bayar(sock, senderNumber, pesan);
       } catch (error) {
-        await kirimPesan(`Gagal kirim beli token pesan ${error}`);
+        await kirimPesan(`Gagal beli ${error}`);
       }
     }
   });

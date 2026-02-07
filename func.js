@@ -1,6 +1,6 @@
-import prisma from './config/db.js';
-import { daftar, NomorOwner } from './list.js';
-import os from 'os';
+import prisma from "./config/db.js";
+import { daftar, NomorOwner } from "./list.js";
+import os from "os";
 
 /**
  * Ambil nama user berdasarkan nomor
@@ -17,7 +17,7 @@ export const updateProfile = async (number, args) => {
     where: { nomor: number },
     data: args,
   });
-}
+};
 
 /**
  * Registrasi nomor baru
@@ -26,11 +26,8 @@ export const registerNumber = async (number, name, newToken) => {
   // Cek apakah nomor SUDAH digunakan oleh siapapun (tanpa peduli namanya)
   const userExists = await prisma.user.findFirst({
     where: {
-      OR: [
-        { nomor: number },
-        { name: name }
-      ]
-    }
+      OR: [{ nomor: number }, { name: name }],
+    },
   });
 
   if (userExists) return false;
@@ -63,7 +60,6 @@ export const profile = async (number) => {
   // buat alias supaya ada properti `nama` juga
   return { ...data, nama: data.name };
 };
-
 
 /**
  * Tambah token user
@@ -159,21 +155,27 @@ export const dataos = {
 };
 
 // Fungsi untuk mengirim pesan dengan retry
-export async function sendMessageSafe(sock, jid, message, retries = 5, delayMs = 3000) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        if (!sock || sock.ws.readyState !== sock.ws.OPEN) {
-          console.log("Socket belum siap, tunggu 3 detik...");
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-          continue; // cek lagi socket
-        }
-        return await sock.sendMessage(jid, message); // berhasil
-      } catch (err) {
-        console.log(
-          `Gagal kirim pesan ke ${jid}, percobaan ke-${i + 1}: ${err.message}`
-        );
+export async function sendMessageSafe(
+  sock,
+  jid,
+  message,
+  retries = 5,
+  delayMs = 3000,
+) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      if (!sock || sock.ws.readyState !== sock.ws.OPEN) {
+        console.log("Socket belum siap, tunggu 3 detik...");
         await new Promise((resolve) => setTimeout(resolve, delayMs));
+        continue; // cek lagi socket
       }
+      return await sock.sendMessage(jid, message); // berhasil
+    } catch (err) {
+      console.log(
+        `Gagal kirim pesan ke ${jid}, percobaan ke-${i + 1}: ${err.message}`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-    throw new Error(`Gagal kirim pesan ke ${jid} setelah ${retries} percobaan`);
   }
+  throw new Error(`Gagal kirim pesan ke ${jid} setelah ${retries} percobaan`);
+}
