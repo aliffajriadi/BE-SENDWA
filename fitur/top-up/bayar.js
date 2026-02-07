@@ -65,7 +65,6 @@ export const bayar = async (sock, senderNumber, pesan) => {
       .substring(2, 8)
       .toUpperCase();
 
-
     // data langsung berisi amount, fee, dll (tidak di dalam data.payment)
     const data = await paksir.createPayment(
       "qris",
@@ -128,8 +127,8 @@ export const bayar = async (sock, senderNumber, pesan) => {
           },
         });
         if (cekPayment) {
-            const cancel = await paksir.cancelPayment(data.order_id, data.amount);
-            
+          const cancel = await paksir.cancelPayment(data.order_id, data.amount);
+
           await prisma.payment.update({
             where: {
               order_id: data.order_id,
@@ -138,7 +137,6 @@ export const bayar = async (sock, senderNumber, pesan) => {
               status: cancel.status,
             },
           });
-          
         }
       } catch (err) {
         console.log("Pesan sudah dihapus oleh user.");
@@ -152,50 +150,94 @@ export const bayar = async (sock, senderNumber, pesan) => {
   }
 };
 
-
 export const webhookPayment = async (sock, sendMessageSafe, data) => {
+  try {
     const dataPayment = await prisma.payment.findUnique({
-        where: {
-            order_id: data.order_id,
-        },
+      where: {
+        order_id: data.order_id,
+      },
     });
-    if (data.status !== "completed") {
-        return console.log("Data tidak berhasil");
-    }
-    if (!dataPayment) {
-        return console.log("Data tidak ditemukan");
-    }
-    if (dataPayment.status === "success") {
-        return console.log("Data sudah berhasil");
-    }
-    if (dataPayment.status === "canceled") {
-        return console.log("Data sudah gagal");
-    }
-    try {
-        if (dataPayment.product_buy === "token") {
-            const updateToken = await prisma.payment.update({
-                where: {
-                    order_id: data.order_id,
-                },
-                data: {
-                    status: "success",
-                    user_id: {
-                        update: {
-                            token: {
-                                increment: dataPayment.product_quantity,
-                            },
-                        },
-                    },
-                },
-            });
-            await sock.sendMessage(dataPayment.user_id + "@s.whatsapp.net", {
-                text: `Pembayaran berhasil! Saldo token Anda bertambah ${dataPayment.product_quantity} token.`,
-            });
-        }
 
-        await sock.sendMessage(dataPayment.user_id + "@s.whatsapp.net", { delete: dataPayment.msg_id });
-       
-    } catch (error) {
-        console.log(error);
+    if (!dataPayment) {
+      return console.log(
+        `[Webhook] Order ID ${data.order_id} tidak ditemukan di database.`,
+      );
     }
+
+    if (data.status !== "completed") {
+      return console.log(
+        `[Webhook] Order ID ${data.order_id} status belum completed: ${data.status}`,
+      );
+    }
+
+    if (dataPayment.status === "success") {
+      return console.log(
+        `[Webhook] Order ID ${data.order_id} sudah diproses sebelumnya.`,
+      );
+    }
+
+    if (dataPayment.status === "canceled") {
+      return console.log(
+        `[Webhook] Order ID ${data.order_id} sudah dibatalkan.`,
+      );
+    }
+
+    if (dataPayment.product_buy === "token") {
+      // Update status payment dan tambah token user secara atomic
+      await prisma.payment.update({
+        where: {
+          order_id: data.order_id,
+        },
+        data: {
+          status: "success",
+          user: {
+            // Menggunakan nama relasi 'user', bukan field 'user_id'
+            update: {
+              token: {
+                increment: dataPayment.product_quantity,
+              },
+            },
+          },
+        },
+      });
+
+      // Kirim notifikasi sukses ke user
+      const jid = dataPayment.user_id + "@s.whatsapp.net";
+      await sendMessageSafe(sock, jid, {
+        text:
+          `✅ *PEMBAYARAN BERHASIL!*\n\n` +
+          `📦 *Produk:* ${dataPayment.product_buy} (${dataPayment.product_quantity} unit)\n` +
+          `💰 *Total:* Rp ${dataPayment.total_payment.toLocaleString("id-ID")}\n` +
+          `🆔 *Order ID:* \`${data.order_id}\`\n\n` +
+          `Sisa token Anda telah berhasil ditambahkan. Silakan cek dengan mengetik *.me*.\n` +
+          `Terima kasih telah berlangganan! ✨`,
+      });
+
+      // Hapus pesan QR Code (jika msg_id tersimpan)
+      if (dataPayment.msg_id) {
+        try {
+          await sendMessageSafe(sock, jid, {
+            delete: {
+              remoteJid: jid,
+              fromMe: true,
+              id: dataPayment.msg_id,
+            },
+          });
+        } catch (delErr) {
+          console.log(`[Webhook] Gagal menghapus pesan QR: ${delErr.message}`);
+        }
+      }
+    } else {
+      // Jika ada jenis produk lain di masa depan
+      await prisma.payment.update({
+        where: { order_id: data.order_id },
+        data: { status: "success" },
+      });
+      console.log(
+        `[Webhook] Order ID ${data.order_id} berhasil diproses (produk: ${dataPayment.product_buy}).`,
+      );
+    }
+  } catch (error) {
+    console.error("[Webhook Error]:", error);
+  }
 };
