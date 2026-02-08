@@ -466,7 +466,8 @@ async function startBot() {
       commandType = "command";
       cooldown = 1500; // normal command
     } else if (
-      global.confessChat.has(userNumPart) ||
+      global.confessChat.has(senderNumber) ||
+      global.confessChat.has(senderNumber.split("@")[0]) ||
       global.confessChat.has(jid.split("@")[0])
     ) {
       commandType = "confess_chat";
@@ -517,27 +518,69 @@ async function startBot() {
     };
 
     // Forward messages if in active confess chat
-    const userNumPart = senderNumber.split("@")[0];
-    const lidNumPart = msg.key.remoteJid.split("@")[0];
+    const senderJid = senderNumber; // senderNumber is already normalized JID from lines 375-399
     const isConfessUser =
-      global.confessChat.has(userNumPart) || global.confessChat.has(lidNumPart);
+      global.confessChat.has(senderJid) ||
+      global.confessChat.has(senderJid.split("@")[0]) ||
+      global.confessChat.has(msg.key.remoteJid);
 
     if (isConfessUser) {
-      const currentSessionId = global.confessChat.has(userNumPart)
-        ? userNumPart
-        : lidNumPart;
-      const partnerNum = global.confessChat.get(currentSessionId);
+      const partnerJid =
+        global.confessChat.get(senderJid) ||
+        global.confessChat.get(senderJid.split("@")[0]) ||
+        global.confessChat.get(msg.key.remoteJid);
+
+      // Handle commands first
       if (pesan === "/stop") {
-        await fitur.stopConfess(sock, msg, senderNumber);
+        await fitur.stopConfess(sock, msg, senderJid);
         return;
       }
-      // Forward any text message (unless it's another command maybe? but usually keep it simple)
-      if (messageText && !messageText.startsWith(".")) {
-        await sock.sendMessage(partnerNum + "@s.whatsapp.net", {
-          text: `📩 *Pesan Confess:* ${messageText}`,
-        });
-        await kirimReaction("📤");
-        return;
+
+      // Forward message to partner if it's not a command
+      if (!messageText.startsWith(".") && !messageText.startsWith("/")) {
+        console.log(`[Confess] Forwarding from ${senderJid} to ${partnerJid}`);
+        try {
+          // If it's a simple text message
+          if (
+            messageType === "conversation" ||
+            messageType === "extendedTextMessage"
+          ) {
+            await sock.sendMessage(partnerJid, {
+              text: `📩 *Pesan Confess:* ${messageText}`,
+            });
+          }
+          // For other types (media), forward the whole message
+          else {
+            await sock.sendMessage(partnerJid, {
+              forward: msg,
+              contextInfo: {
+                isForwarded: true,
+                externalAdReply: {
+                  title: "Pesan Confess Anonim",
+                  body: "Sesi obrolan aktif",
+                  showAdAttribution: true,
+                },
+              },
+            });
+            // Also send caption if it exists and was not already forwarded
+            if (
+              messageText &&
+              messageType !== "conversation" &&
+              messageType !== "extendedTextMessage"
+            ) {
+              await sock.sendMessage(partnerJid, {
+                text: `📩 *Caption Confess:* ${messageText}`,
+              });
+            }
+          }
+          await kirimReaction("📤");
+          return;
+        } catch (err) {
+          console.error("[Confess] Forwarding error:", err);
+          await kirimPesan(
+            "❌ Gagal mengirim pesan ke partner. Pastikan chat masih aktif.",
+          );
+        }
       }
     }
 

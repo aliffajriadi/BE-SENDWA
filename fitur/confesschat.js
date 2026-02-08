@@ -1,4 +1,4 @@
-export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
+export const confessChatHandler = async (sock, msg, text, senderJid) => {
   try {
     const cleanText = text.replace(/\s+/g, " ").trim();
     const args = cleanText.split(" ");
@@ -6,6 +6,13 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
     if (args.length < 3) {
       await sock.sendMessage(msg.key.remoteJid, {
         text: `⚠️ *Format Salah!*\n\nGunakan format: \`.confess <nomor> <pesan>\`\nContoh: \`.confess 628123456789 Halo\``,
+      });
+      return false;
+    }
+
+    if (msg.key.remoteJid.endsWith("@g.us")) {
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: "⚠️ Fitur ini hanya dapat digunakan dalam chat pribadi untuk menjaga kerahasiaan.",
       });
       return false;
     }
@@ -27,15 +34,17 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
       return false;
     }
 
-    const targetNum = fixedNumber;
-    const senderNum = senderNumberJid.split("@")[0];
+    const targetSearchJid = fixedNumber + "@s.whatsapp.net";
+    const senderNum = senderJid.split("@")[0];
 
-    console.log(`[ConfessChat] Request: From ${senderNum} to ${targetNum}`);
+    console.log(
+      `[ConfessChat] Request: From ${senderJid} to ${targetSearchJid}`,
+    );
 
-    const [cek] = await sock.onWhatsApp(targetNum + "@s.whatsapp.net");
+    const [cek] = await sock.onWhatsApp(targetSearchJid);
     if (!cek || !cek.exists) {
-      await sock.sendMessage(senderNumberJid, {
-        text: `❌ Nomor ${targetNum} tidak terdaftar di WhatsApp.`,
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: `❌ Nomor ${fixedNumber} tidak terdaftar di WhatsApp.`,
       });
       return false;
     }
@@ -43,15 +52,24 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
     const targetRealJid = cek.jid;
     const targetRealNum = targetRealJid.split("@")[0];
 
-    if (global.confessChat.has(senderNum)) {
-      await sock.sendMessage(senderNumberJid, {
-        text: `⚠️ Kamu masih dalam obrolan lain. Ketik /stop untuk berhenti.`,
+    // Check if sender is in a chat
+    if (
+      global.confessChat.has(senderJid) ||
+      global.confessChat.has(senderNum)
+    ) {
+      await sock.sendMessage(msg.key.remoteJid, {
+        text: `⚠️ Kamu masih dalam obrolan lain. Ketik */stop* untuk berhenti.`,
       });
       return false;
     }
 
-    if (global.confessChat.has(targetRealNum)) {
-      await sock.sendMessage(senderNumberJid, {
+    // Check if target is in a chat
+    if (
+      global.confessChat.has(targetRealJid) ||
+      global.confessChat.has(targetRealNum) ||
+      global.confessChat.has(targetSearchJid)
+    ) {
+      await sock.sendMessage(msg.key.remoteJid, {
         text: `⚠️ Target sedang sibuk dalam obrolan lain.`,
       });
       return false;
@@ -62,19 +80,19 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
 
     await sock.sendMessage(targetRealJid, { text: instantMsg });
 
-    // PENTING: Simpan ke dua-duanya (PN dan LID) jika berbeda untuk meminimalkan error
-    global.pendingConfess.set(targetRealNum, senderNum);
-    if (targetNum !== targetRealNum) {
-      global.pendingConfess.set(targetNum, senderNum);
-    }
+    // Store pending confess using multiple keys for maximum compatibility
+    global.pendingConfess.set(targetRealJid, senderJid);
+    global.pendingConfess.set(targetSearchJid, senderJid);
+    global.pendingConfess.set(targetRealNum, senderJid);
+    global.pendingConfess.set(fixedNumber, senderJid);
 
     console.log(
-      `[ConfessChat] Message sent instantly to target: ${targetRealNum} and ${targetNum}`,
+      `[ConfessChat] Pending set for ${targetRealJid} and ${targetSearchJid}`,
     );
 
     // Give instant feedback to sender
-    await sock.sendMessage(senderNumberJid, {
-      text: `✅ *Pesan berhasil dikirim ke ${targetNum}!* 🎉\n\n📩 Pesanmu telah terkirim secara anonim.\n💬 Jika dia tertarik, dia bisa balas dengan /terima untuk mulai obrolan.\n\n⏳ Tunggu balasannya ya...`,
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: `✅ *Pesan berhasil dikirim ke ${fixedNumber}!* 🎉\n\n📩 Pesanmu telah terkirim secara anonim.\n💬 Jika dia tertarik, dia bisa balas dengan */terima* untuk mulai obrolan.\n\n⏳ Tunggu balasannya ya...`,
     });
 
     return true;
@@ -84,88 +102,119 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
   }
 };
 
-export const terimaConfess = async (sock, msg, senderNumberJid) => {
-  const userJid = msg.key.remoteJid;
-  const userNum = senderNumberJid.split("@")[0];
-  const lidNum = userJid.split("@")[0];
+export const terimaConfess = async (sock, msg, senderJid) => {
+  const userNum = senderJid.split("@")[0];
+  const remoteJid = msg.key.remoteJid;
+  const remoteNum = remoteJid.split("@")[0];
 
-  console.log(`[ConfessChat] .terima from PN: ${userNum}, JID-Num: ${lidNum}`);
+  console.log(`[ConfessChat] .terima request from: ${senderJid}`);
 
-  let senderNum =
-    global.pendingConfess.get(userNum) || global.pendingConfess.get(lidNum);
-  let matchedKey = global.pendingConfess.has(userNum) ? userNum : lidNum;
+  // Try finding in pending by various keys
+  let partnerJid =
+    global.pendingConfess.get(senderJid) ||
+    global.pendingConfess.get(userNum) ||
+    global.pendingConfess.get(remoteJid) ||
+    global.pendingConfess.get(remoteNum);
 
-  if (!senderNum) {
+  if (!partnerJid) {
     console.log(
       "[ConfessChat] FAILED .terima. Current pending keys:",
       Array.from(global.pendingConfess.keys()),
     );
-    await sock.sendMessage(senderNumberJid, {
-      text: "❌ Tidak ada permintaan confess yang tertunda untuk nomor kamu.",
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: "❌ Tidak ada permintaan confess yang tertunda untuk kamu.",
     });
     return;
   }
 
-  // Set active chat for both
-  global.confessChat.set(userNum, senderNum);
-  global.confessChat.set(lidNum, senderNum);
-  global.confessChat.set(senderNum, userNum);
+  console.log(`[ConfessChat] Found partner: ${partnerJid} for ${senderJid}`);
 
+  // Check if partner is still available
+  if (global.confessChat.has(partnerJid)) {
+    await sock.sendMessage(msg.key.remoteJid, {
+      text: "⚠️ Maaf, pengirim pesan sudah memulai obrolan lain.",
+    });
+    global.pendingConfess.delete(senderJid);
+    global.pendingConfess.delete(userNum);
+    return;
+  }
+
+  // Set active chat for both (using full JIDs for stability)
+  global.confessChat.set(senderJid, partnerJid);
+  global.confessChat.set(partnerJid, senderJid);
+
+  // Also store by number parts to ensure lookup matches in index.js
+  global.confessChat.set(userNum, partnerJid);
+  global.confessChat.set(partnerJid.split("@")[0], senderJid);
+
+  // Clean up pending
+  global.pendingConfess.delete(senderJid);
   global.pendingConfess.delete(userNum);
-  global.pendingConfess.delete(lidNum);
+  global.pendingConfess.delete(remoteJid);
+  global.pendingConfess.delete(remoteNum);
+  // Also delete by partner's number just in case
+  global.pendingConfess.delete(partnerJid.split("@")[0]);
 
-  await sock.sendMessage(senderNumberJid, {
-    text: "✅ *Obrolan dimulai!* Ketik pesan (tanpa /) untuk mengirim. Ketik */stop* untuk berhenti.",
+  await sock.sendMessage(msg.key.remoteJid, {
+    text: "✅ *Obrolan dimulai!* \n\nKirim pesan seperti biasa untuk mengobrol secara anonim.\nKetik */stop* untuk mengakhiri obrolan.",
   });
-  await sock.sendMessage(senderNum + "@s.whatsapp.net", {
-    text: "✅ *Permintaanmu diterima!* Kalian bisa saling mengobrol sekarang. Ketik */stop* untuk berhenti.",
+
+  await sock.sendMessage(partnerJid, {
+    text: "✅ *Permintaanmu diterima!* 🎉\n\nKalian bisa saling mengobrol sekarang secara anonim.\nKetik */stop* untuk mengakhiri obrolan.",
   });
 };
 
-export const tolakConfess = async (sock, msg, senderNumberJid) => {
-  const userJid = msg.key.remoteJid;
-  const userNum = senderNumberJid.split("@")[0];
-  const lidNum = userJid.split("@")[0];
+export const tolakConfess = async (sock, msg, senderJid) => {
+  const userNum = senderJid.split("@")[0];
+  const remoteJid = msg.key.remoteJid;
 
-  let senderNum =
-    global.pendingConfess.get(userNum) || global.pendingConfess.get(lidNum);
-  let matchedKey = global.pendingConfess.has(userNum) ? userNum : lidNum;
+  let partnerJid =
+    global.pendingConfess.get(senderJid) ||
+    global.pendingConfess.get(userNum) ||
+    global.pendingConfess.get(remoteJid);
 
-  if (!senderNum) {
-    await sock.sendMessage(senderNumberJid, {
+  if (!partnerJid) {
+    await sock.sendMessage(msg.key.remoteJid, {
       text: "❌ Tidak ada permintaan confess yang tertunda.",
     });
     return;
   }
 
+  global.pendingConfess.delete(senderJid);
   global.pendingConfess.delete(userNum);
-  global.pendingConfess.delete(lidNum);
+  global.pendingConfess.delete(remoteJid);
 
-  await sock.sendMessage(senderNumberJid, {
+  await sock.sendMessage(msg.key.remoteJid, {
     text: "❌ Kamu menolak obrolan tersebut.",
   });
-  await sock.sendMessage(senderNum + "@s.whatsapp.net", {
+
+  await sock.sendMessage(partnerJid, {
     text: "❌ Maaf, permintaan obrolan anonim kamu ditolak.",
   });
 };
 
-export const stopConfess = async (sock, msg, senderNumberJid) => {
-  const userJid = msg.key.remoteJid;
-  const userNum = senderNumberJid.split("@")[0];
-  const lidNum = userJid.split("@")[0];
+export const stopConfess = async (sock, msg, senderJid) => {
+  const userNum = senderJid.split("@")[0];
+  const remoteJid = msg.key.remoteJid;
 
-  let partnerNum =
-    global.confessChat.get(userNum) || global.confessChat.get(lidNum);
-  let matchedKey = global.confessChat.has(userNum) ? userNum : lidNum;
+  let partnerJid =
+    global.confessChat.get(senderJid) ||
+    global.confessChat.get(userNum) ||
+    global.confessChat.get(remoteJid);
 
-  if (!partnerNum) return;
+  if (!partnerJid) return;
 
+  const partnerNum = partnerJid.split("@")[0];
+
+  // Clean up all possible keys
+  global.confessChat.delete(senderJid);
   global.confessChat.delete(userNum);
-  global.confessChat.delete(lidNum);
+  global.confessChat.delete(partnerJid);
   global.confessChat.delete(partnerNum);
+  global.confessChat.delete(remoteJid);
 
-  await sock.sendMessage(senderNumberJid, { text: "⏹️ *Obrolan selesai.*" });
-  await sock.sendMessage(partnerNum + "@s.whatsapp.net", {
+  await sock.sendMessage(msg.key.remoteJid, { text: "⏹️ *Obrolan selesai.*" });
+  await sock.sendMessage(partnerJid, {
     text: "⏹️ *Partner telah mengakhiri obrolan.*",
   });
 };
