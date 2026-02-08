@@ -324,6 +324,7 @@ async function startBot() {
   ///////////////////////////////////////////////////////////////////////////////
 
   const rateLimitMap = new Map();
+  const processedMessages = new Map(); // Track processed messages to prevent duplicates
 
   // Handle incoming messages
   sock.ev.on("messages.upsert", async ({ messages, type }) => {
@@ -333,6 +334,30 @@ async function startBot() {
 
     const jid = msg.key.remoteJid;
     if (jid === "status@broadcast") return;
+
+    // ✅ Message Deduplication - Prevent duplicate processing
+    const messageId = msg.key.id;
+    const messageTimestamp = msg.messageTimestamp;
+    const dedupeKey = `${jid}_${messageId}_${messageTimestamp}`;
+
+    if (processedMessages.has(dedupeKey)) {
+      console.log(`[DEDUPE] Skipping duplicate message: ${messageId}`);
+      return;
+    }
+
+    // Mark as processed (keep for 60 seconds)
+    processedMessages.set(dedupeKey, Date.now());
+
+    // Clean up old entries every 100 messages
+    if (processedMessages.size > 100) {
+      const now = Date.now();
+      const expireTime = 60000; // 60 seconds
+      for (const [key, timestamp] of processedMessages.entries()) {
+        if (now - timestamp > expireTime) {
+          processedMessages.delete(key);
+        }
+      }
+    }
 
     // Cek jika pengirim adalah bot sendiri (normalize user first)
     const botId = jidNormalizedUser(sock.user.id);
