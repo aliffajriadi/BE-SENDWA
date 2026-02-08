@@ -400,20 +400,79 @@ async function startBot() {
     const lowerText = messageText.toLowerCase();
     const pesan = lowerText;
 
-    // ✅ Anti-Spam Logic
+    // ✅ Anti-Spam Logic - Per User, Per Command Type
     const now = Date.now();
-    const cooldown = 2000; // 2 detik
 
-    if (rateLimitMap.has(senderNumber)) {
-      const lastTime = rateLimitMap.get(senderNumber);
-      if (now - lastTime < cooldown) {
-        await sock.sendMessage(senderNumber, {
-          text: "Terlalu banyak permintaan, tunggu 3-5 detik",
-        });
-        return;
+    // Initialize user rate limit data if not exists
+    if (!rateLimitMap.has(senderNumber)) {
+      rateLimitMap.set(senderNumber, {
+        lastCommand: null,
+        lastTime: 0,
+        count: 0,
+      });
+    }
+
+    const userLimit = rateLimitMap.get(senderNumber);
+
+    // Determine command type for smart cooldown
+    let commandType = "normal";
+    let cooldown = 1500; // default 1.5 detik untuk command biasa
+
+    if (
+      pesan.startsWith(".confess") ||
+      pesan.startsWith("/terima") ||
+      pesan.startsWith("/tolak") ||
+      pesan.startsWith("/stop")
+    ) {
+      commandType = "confess";
+      cooldown = 500; // confess feature needs fast response
+    } else if (simpleReplies[pesan]) {
+      commandType = "reply";
+      cooldown = 0; // no cooldown for simple replies
+    } else if (
+      pesan.startsWith(".tiktok") ||
+      pesan.startsWith(".tt") ||
+      pesan.startsWith(".ig") ||
+      pesan.startsWith(".instagram")
+    ) {
+      commandType = "download";
+      cooldown = 3000; // download needs longer cooldown
+    } else if (pesan.startsWith(".")) {
+      commandType = "command";
+      cooldown = 1500; // normal command
+    } else if (
+      global.confessChat.has(userNumPart) ||
+      global.confessChat.has(jid.split("@")[0])
+    ) {
+      commandType = "confess_chat";
+      cooldown = 800; // in active confess chat, allow faster messages
+    }
+
+    // Check if spam (only for same command type in short time)
+    if (userLimit.lastCommand === commandType && userLimit.lastTime > 0) {
+      const timeSinceLastMessage = now - userLimit.lastTime;
+
+      if (timeSinceLastMessage < cooldown) {
+        // Increment spam counter
+        userLimit.count += 1;
+
+        // Only warn after 2 rapid messages
+        if (userLimit.count >= 2) {
+          await sock.sendMessage(senderNumber, {
+            text: `⚠️ Tunggu ${Math.ceil(cooldown / 1000)} detik sebelum mengirim ${commandType === "download" ? "command download" : "pesan"} lagi.`,
+          });
+          return;
+        }
+      } else {
+        // Reset counter if enough time has passed
+        userLimit.count = 0;
       }
     }
-    rateLimitMap.set(senderNumber, now);
+
+    // Update user's last activity
+    userLimit.lastCommand = commandType;
+    userLimit.lastTime = now;
+    rateLimitMap.set(senderNumber, userLimit);
 
     const kirimPesan = async (pesan) => {
       await sock.sendMessage(

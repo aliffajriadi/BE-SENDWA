@@ -5,7 +5,7 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
 
     if (args.length < 3) {
       await sock.sendMessage(msg.key.remoteJid, {
-        text: `⚠️ *Format Salah!*\n\nGunakan format: \`/confess <nomor> <pesan>\`\nContoh: \`/confess 628123456789 Halo\``,
+        text: `⚠️ *Format Salah!*\n\nGunakan format: \`.confess <nomor> <pesan>\`\nContoh: \`.confess 628123456789 Halo\``,
       });
       return false;
     }
@@ -57,9 +57,10 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
       return false;
     }
 
-    const requestMsg = `💌 *Kamu Dapat Pesan Confess!* 💌\n\n━━━━━━━━━━━━━━━\n"${pesanAwal}"\n━━━━━━━━━━━━━━━\n\nSeseorang ingin mengobrol anonim. Setuju?\n\nKetik */terima* untuk mulai balas\nKetik */tolak* untuk menolak`;
+    // Send message immediately to target
+    const instantMsg = `💌 *Pesan Anonim untuk Kamu!* 💌\n\n━━━━━━━━━━━━━━━\n"${pesanAwal}"\n━━━━━━━━━━━━━━━\n\n💬 Seseorang mengirim pesan ini secara anonim.\n\n✨ Ingin balas dan mulai obrolan?\nKetik */terima* untuk mulai chat anonim\nKetik */tolak* untuk menolak`;
 
-    await sock.sendMessage(targetRealJid, { text: requestMsg });
+    await sock.sendMessage(targetRealJid, { text: instantMsg });
 
     // PENTING: Simpan ke dua-duanya (PN dan LID) jika berbeda untuk meminimalkan error
     global.pendingConfess.set(targetRealNum, senderNum);
@@ -68,11 +69,12 @@ export const confessChatHandler = async (sock, msg, text, senderNumberJid) => {
     }
 
     console.log(
-      `[ConfessChat] Pending saved for target: ${targetRealNum} and ${targetNum}`,
+      `[ConfessChat] Message sent instantly to target: ${targetRealNum} and ${targetNum}`,
     );
 
+    // Give instant feedback to sender
     await sock.sendMessage(senderNumberJid, {
-      text: `✅ *Permintaan dikirim ke ${targetNum}!* Tunggu dia menerima ya...`,
+      text: `✅ *Pesan berhasil dikirim ke ${targetNum}!* 🎉\n\n📩 Pesanmu telah terkirim secara anonim.\n💬 Jika dia tertarik, dia bisa balas dengan /terima untuk mulai obrolan.\n\n⏳ Tunggu balasannya ya...`,
     });
 
     return true;
