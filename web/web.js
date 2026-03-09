@@ -927,8 +927,6 @@ export const web = (app) => {
     res.json(keys);
   });
 
-  //ANJAYMABAR
-
   app.post("/api/admin/apikeys", authMiddleware, async (req, res) => {
     const { id, key, owner, token } = req.body;
     const apikey = await prisma.apiKey.upsert({
