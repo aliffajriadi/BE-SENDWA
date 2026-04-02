@@ -65,10 +65,9 @@ export const cekDeadline = async (sock, msg, args) => {
 
             const remainingMs = dueTime - sekarang;
             const remainingHours = Math.max(0, Math.ceil(remainingMs / 3600000));
+            console.log(remainingHours);
 
-            const status = item.is_overdue 
-                ? "🚨 *SUDAH TERLAMBAT*" 
-                : remainingHours <= 10 
+            const status = remainingHours <= 10 
                     ? "🔴 *KRITIS - Segera dikerjakan!*" 
                     : "🟡 *Mendekati deadline*";
 
