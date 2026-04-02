@@ -110,6 +110,16 @@ const jadwal = {
 };
 const NomorOwner = "62895603792033";
 
+const menuLearning = `
+╭─━━━✦ *🤖 MENU LEARNING* ✦━━━─╮
+cek learning if c 
+
+cek deadline => /cek <hari>
+
+contoh => /cek 6
+
+`
+
 const menu = `
 ╭─━━━✦ *🤖 MENU UTAMA* ✦━━━─╮
 

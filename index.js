@@ -1026,6 +1026,69 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
         await kirimPesan(`Gagal beli ${error}`);
       }
     }
+
+//=============================================================================
+    //LEARNING LOGIC COMAND
+    else if (pesan.startsWith("/cek")) {
+      const args = pesan.split(" ")[1];
+      if (!args) {
+        await kirimPesan("Masukkan hari yang ingin dicek\nContoh: /cek 6");
+        await kirimReaction("❌");
+        return;
+      }
+      try {
+        await kirimReaction("🕒");
+        await fitur.cekDeadline(sock, msg, args);
+        await kirimReaction("✅");
+      } catch (error) {
+        await kirimReaction("❌");
+        await kirimPesan(`Gagal cek deadline pesan ${error}`);
+      }
+    } else if (pesan.startsWith("/today")) {
+      try {
+        await kirimReaction("🕒");
+        await fitur.cekDeadline(sock, msg, "1");
+        await kirimReaction("✅");
+      } catch (error) {
+        await kirimReaction("❌");
+        await kirimPesan(`Gagal cek deadline pesan ${error}`);
+      }
+    } else if (pesan.startsWith("/week")) {
+      try {
+        await kirimReaction("🕒");
+        await fitur.cekDeadline(sock, msg, "7");
+        await kirimReaction("✅");
+      } catch (error) {
+        await kirimReaction("❌");
+        await kirimPesan(`Gagal cek deadline pesan ${error}`);
+      }
+    } else if (pesan.startsWith("/help") || pesan.startsWith("/menu")) {
+      try {
+        await kirimPesan(
+          `📚 *Fitur Learning*\n` +
+            `────────────────────\n\n` +
+            `🔍 *Perintah yang tersedia:*\n\n` +
+            `📅 */cek <hari>*\n` +
+            `Cek deadline dalam beberapa hari ke depan\n\n` +
+            `🗓️ */today*\n` +
+            `Cek deadline hari ini\n\n` +
+            `📆 */week*\n` +
+            `Cek deadline dalam 1 minggu\n\n` +
+            `────────────────────\n` +
+            `Ketik salah satu perintah di atas ya 👍`,
+        );
+        await kirimReaction("✅");
+      } catch (error) {
+        await kirimReaction("❌");
+        await kirimPesan(
+          `❌ *Terjadi Kesalahan*\n\n` +
+            `Gagal menampilkan fitur.\n` +
+            `Detail: ${error.message || error}`,
+        );
+      }
+    }
+    //END LEARNING LOGIC COMAND
+//=============================================================================
   });
 }
 

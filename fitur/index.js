@@ -27,6 +27,7 @@ import {
   tolakConfess,
   stopConfess,
 } from "./confesschat.js";
+import { cekDeadline } from "./learning/cek-deadline.js";
 export {
   instagramDownloader,
   daftarHosting,
@@ -57,4 +58,5 @@ export {
   terimaConfess,
   tolakConfess,
   stopConfess,
+  cekDeadline,
 };
