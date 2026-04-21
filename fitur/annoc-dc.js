@@ -1,5 +1,5 @@
 import axios from "axios";
-import config from "../config";
+import config from "../config.js";
 
 const webhook = config.DISCORD_WEBHOOK_ANNOUC;
 export const sendPesan = async (pesan) => {
