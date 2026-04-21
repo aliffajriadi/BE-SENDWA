@@ -22,6 +22,7 @@ import { crudApiKeyBuisness } from "./fitur/apiKeyBisnis.js";
 import rateLimit from "express-rate-limit";
 import { web } from "./web/web.js";
 import paksir from "./config/payment/index.js";
+import config from "./config.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
