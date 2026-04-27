@@ -28,6 +28,7 @@ import {
   stopConfess,
 } from "./confesschat.js";
 import { cekDeadline } from "./learning/cek-deadline.js";
+import { shortlinkHandler } from "./shortlink/shortlink.js";
 export {
   instagramDownloader,
   daftarHosting,
@@ -59,4 +60,5 @@ export {
   tolakConfess,
   stopConfess,
   cekDeadline,
+  shortlinkHandler,
 };

@@ -1026,6 +1026,16 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
       } catch (error) {
         await kirimPesan(`Gagal beli ${error}`);
       }
+    } else if (messageText.startsWith(".link")) {
+      if (senderNumber.replace("@s.whatsapp.net", "") !== NomorOwner) {
+        return await kirimPesan("Anda bukan owner, lappet jangan aneh aneh kau");
+      }
+      try {
+        await fitur.shortlinkHandler(sock, msg, messageText);
+      } catch (error) {
+        console.error("[.link] Error:", error);
+        await kirimPesan(`❌ Terjadi kesalahan pada perintah .link\n${error.message}`);
+      }
     }
 
 //=============================================================================
