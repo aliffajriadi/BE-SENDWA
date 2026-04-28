@@ -1036,6 +1036,16 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
         console.error("[.link] Error:", error);
         await kirimPesan(`❌ Terjadi kesalahan pada perintah .link\n${error.message}`);
       }
+    } else if (messageText.startsWith(".short")) {
+      if (senderNumber.replace("@s.whatsapp.net", "") !== NomorOwner) {
+        return await kirimPesan("Anda bukan owner, lappet jangan aneh aneh kau");
+      }
+      try {
+        await fitur.shortPolibatamHandler(sock, msg, messageText);
+      } catch (error) {
+        console.error("[.short] Error:", error);
+        await kirimPesan(`❌ Terjadi kesalahan pada perintah .short\n${error.message}`);
+      }
     }
 
 //=============================================================================
