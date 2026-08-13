@@ -30,6 +30,7 @@ import {
 import { cekDeadline } from "./learning/cek-deadline.js";
 import { shortlinkHandler } from "./shortlink/shortlink.js";
 import { shortPolibatamHandler } from "./shortpolibatam/short-polibatam.js";
+import { storekuStats } from "./storeku/store.js";
 export {
   instagramDownloader,
   daftarHosting,
@@ -39,6 +40,7 @@ export {
   daftarFunc,
   cekServer,
   broadcast,
+  storekuStats,
   createStiker,
   tokenManage,
   removebgHandler,

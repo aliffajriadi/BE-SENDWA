@@ -1107,6 +1107,21 @@ Cek Profil dan Token Kamu dengan mengetik: .me`,
             `Detail: ${error.message || error}`,
         );
       }
+    } else if (pesan.startsWith(".pg")) {
+      if (senderNumber.replace("@s.whatsapp.net", "") !== NomorOwner) {
+        return await kirimPesan("Anda bukan owner, lappet jangan aneh aneh kau");
+      }
+      try {
+        await kirimReaction("🕒");
+        const success = await fitur.storekuStats(sock, msg, pesan);
+        if (!success) {
+          return await kirimReaction("❌");
+        }
+        await kirimReaction("✅");
+      } catch (error) {
+        await kirimReaction("❌");
+        await kirimPesan(`Gagal cek stats pesan ${error}`);
+      }
     }
     //END LEARNING LOGIC COMAND
 //=============================================================================
