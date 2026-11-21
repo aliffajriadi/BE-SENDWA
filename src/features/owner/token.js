@@ -1,0 +1,50 @@
+import { setToken, lessToken } from "../../services/user.service.js";
+import { NomorOwner } from "../../utils/messages.js";
+
+export const tokenManage = async (sock, msg, senderNumber, pesan) => {
+    const owner = NomorOwner;
+      const pengirim = senderNumber.replace("@s.whatsapp.net", "");
+      if (pengirim !== owner) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: `Anda bukan owner, lappet jangan aneh aneh kau`,
+        });
+      }
+      const nomorTujuan = pesan.split(" ")[1];
+      let token = pesan.split(" ")[2];
+      const penjumlahan = pesan.split(" ")[3];
+      token = parseInt(token);
+
+      if (isNaN(token)) {
+        return await sock.sendMessage(msg.key.remoteJid, {
+          text: "Token harus berupa angka",
+        });
+      }
+
+      if (penjumlahan == "tambah") {
+        const settoken = await setToken(nomorTujuan, token);
+        if (!settoken) {
+          return await sock.sendMessage(msg.key.remoteJid, {
+            text: `Nomor ${nomorTujuan} tidak ditemukan`,
+          });
+        }
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `Token berhasil ditambahkan ke ${nomorTujuan}
+        
+Token sekarang *${settoken.token}*
+Nama *${settoken.name}*`,
+        });
+      } else if (penjumlahan == "kurang") {
+        const kurangtoken = await lessToken(nomorTujuan, token);
+        if (!kurangtoken) {
+          return await sock.sendMessage(msg.key.remoteJid, {
+            text: `Nomor ${nomorTujuan} tidak ditemukan`,
+          });
+        }
+        await sock.sendMessage(msg.key.remoteJid, {
+          text: `Token berhasil dikurangi ke ${nomorTujuan}
+        
+Token sekarang *${kurangtoken.token}*
+Nama *${kurangtoken.name}*`,
+        });
+      }
+}

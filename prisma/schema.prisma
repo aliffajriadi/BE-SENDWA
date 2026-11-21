@@ -47,3 +47,38 @@ model ApiKey {
   updatedAt DateTime @updatedAt
   @@map("api_keys")
 }
+
+model Project {
+  id              String         @id @default(cuid())
+  name            String
+  api_key         String         @unique
+  webhook_url     String?
+  webhook_secret  String
+  reply_mode      String         @default("none") // respon bot ke user: none | reaction | message
+  success_message String?        // dipakai kalau reply_mode = message (null = default)
+  expires_in      Int            @default(300) // detik, default kalau request tidak mengirim expires_in
+  active          Boolean        @default(true)
+  verifications   Verification[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  @@map("projects")
+}
+
+model Verification {
+  id             String    @id @default(cuid())
+  project_id     String
+  project        Project   @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  code           String    @unique
+  token          String    @unique // acak, untuk link halaman publik /verify/<token>
+  phone          String?   // kalau diisi, nomor pengirim wajib sama
+  verified_phone String?
+  reference      String?
+  status         String    @default("pending") // pending | verified (expired dihitung dari expires_at)
+  expires_at     DateTime
+  verified_at    DateTime?
+  webhook_status String?   // sent | failed
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@index([project_id, createdAt])
+  @@map("verifications")
+}

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Verifikasi WhatsApp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%2310b981'/><path d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <script>
+    try {
+      const t = localStorage.getItem("sendwa_theme");
+      if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; }
+    .card { width: 100%; max-width: 440px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
+    .card-head { padding: 22px 24px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .card-head .label { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .card-head .project { font-size: 17px; font-weight: 800; overflow-wrap: anywhere; }
+    .card-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+    .code-box { text-align: center; padding: 18px 14px; border-radius: 14px; background: var(--primary-soft); }
+    .code-box .hint { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .code-value { font-family: var(--mono); font-size: 30px; font-weight: 600; letter-spacing: .06em; color: var(--primary); display: inline-flex; align-items: center; gap: 8px; }
+    .code-value .icon-btn { width: 32px; height: 32px; border: 0; background: transparent; color: var(--primary); }
+    .meta { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
+    .meta b { color: var(--text); font-variant-numeric: tabular-nums; }
+    .btn-wa { height: 50px; font-size: 15px; width: 100%; }
+    .qr { display: flex; gap: 16px; align-items: center; padding: 14px; border: 1px dashed var(--border); border-radius: 14px; }
+    .qr-img { width: 116px; height: 116px; flex: none; background: #fff; border-radius: 10px; padding: 6px; }
+    .qr-img svg { width: 100%; height: 100%; }
+    .qr p { font-size: 13px; color: var(--muted); }
+    .steps { margin: 0; padding-left: 20px; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+    .steps b, .steps code { color: var(--text); }
+    .steps code { white-space: nowrap; }
+    .state { text-align: center; padding: 36px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .state-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; }
+    .state-icon svg { width: 32px; height: 32px; }
+    .state-icon.ok { background: var(--primary-soft); color: var(--primary); }
+    .state-icon.bad { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+    .state h1 { font-size: 20px; }
+    .state p { color: var(--muted); max-width: 320px; }
+    .foot { margin-top: 18px; text-align: center; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+    .foot svg { width: 14px; height: 14px; color: var(--primary); }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 0 var(--amber); animation: pulse 1.6s infinite; }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+    .waiting { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--muted); }
+    @media (hover: none) and (pointer: coarse) { .qr { display: none; } } /* di HP cukup tombol */
+    @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-logo" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .3-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.2-1.6-1.2-3s.8-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.2 1.1 2.2 1.4 2.5 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.3.7-.2l2 1c.3.1.5.2.6.3.1.2.1.8-.2 1.5Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 9h11v11H9zM5 15H4V4h11v1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-15v5l3 2"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Zm-3-10 2 2 4-4"/></symbol>
+  </svg>
+
+  <main class="card" aria-live="polite">
+    <div class="card-head">
+      <div>
+        <div class="label">Verifikasi nomor WhatsApp untuk</div>
+        <div class="project" id="project">Memuat…</div>
+      </div>
+      <span id="badge"></span>
+    </div>
+
+    <!-- Menunggu -->
+    <div class="card-body" id="pending" hidden>
+      <div class="code-box">
+        <div class="hint">Kode verifikasi</div>
+        <div class="code-value"><span id="code"></span>
+          <button class="icon-btn" id="copyBtn" title="Salin kode" aria-label="Salin kode"><svg><use href="#i-copy"/></svg></button></div>
+      </div>
+      <div class="meta">
+        <span id="phoneHint"></span>
+        <span>Berlaku <b id="countdown">--:--</b></span>
+      </div>
+      <a class="btn btn-primary btn-wa" id="waBtn" target="_blank" rel="noopener"><svg><use href="#i-logo"/></svg>Verifikasi via WhatsApp</a>
+      <div class="qr" id="qrBox" hidden>
+        <div class="qr-img" id="qr"></div>
+        <p>Sedang di laptop? Scan QR ini dengan kamera HP untuk membuka WhatsApp dengan pesan yang sudah terisi.</p>
+      </div>
+      <ol class="steps">
+        <li>Tekan tombol di atas, WhatsApp akan terbuka.</li>
+        <li>Kirim pesan yang sudah terisi <b>tanpa mengubahnya</b>.<br />Atau ketik manual: <code id="manualText"></code></li>
+        <li>Halaman ini akan berubah otomatis setelah terverifikasi.</li>
+      </ol>
+      <div class="waiting"><span class="pulse"></span>Menunggu pesan kamu…</div>
+    </div>
+
+    <!-- Berhasil / kedaluwarsa / tidak ditemukan -->
+    <div class="state" id="final" hidden>
+      <div class="state-icon" id="finalIcon"><svg><use href="#i-check"/></svg></div>
+      <h1 id="finalTitle"></h1>
+      <p id="finalText"></p>
+    </div>
+  </main>
+
+  <p class="foot"><svg><use href="#i-shield"/></svg>Diverifikasi oleh SendWA · tidak ada OTP yang dikirim ke kamu</p>
+
+  <script>
+    "use strict";
+    const $ = (s) => document.querySelector(s);
+    const token = decodeURIComponent(location.pathname.split("/").filter(Boolean).pop() || "");
+    const BADGE = {
+      pending: '<span class="badge badge-amber">Menunggu</span>',
+      verified: '<span class="badge badge-green">Terverifikasi</span>',
+      expired: '<span class="badge badge-gray">Kedaluwarsa</span>',
+    };
+
+    let data = null;
+    let clockOffset = 0; // selisih jam server vs jam perangkat
+    let pollTimer, tickTimer;
+
+    const fmtTime = (d) =>
+      new Date(d).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+
+    function showFinal(kind, title, text) {
+      clearTimeout(pollTimer);
+      clearInterval(tickTimer);
+      $("#pending").hidden = true;
+      $("#final").hidden = false;
+      $("#finalIcon").className = `state-icon ${kind === "ok" ? "ok" : "bad"}`;
+      $("#finalIcon use").setAttribute("href", kind === "ok" ? "#i-check" : kind === "expired" ? "#i-clock" : "#i-x");
+      $("#finalTitle").textContent = title;
+      $("#finalText").textContent = text;
+    }
+
+    function tick() {
+      const left = Math.max(0, Math.floor((new Date(data.expires_at) - (Date.now() + clockOffset)) / 1000));
+      const h = Math.floor(left / 3600), m = Math.floor((left % 3600) / 60), s = left % 60;
+      $("#countdown").textContent = (h ? `${h}:${String(m).padStart(2, "0")}` : m) + ":" + String(s).padStart(2, "0");
+      if (left === 0) render({ ...data, status: "expired" });
+    }
+
+    function render(d) {
+      data = d;
+      $("#project").textContent = d.project;
+      $("#badge").innerHTML = BADGE[d.status] || "";
+      document.title = `Verifikasi WhatsApp · ${d.project}`;
+
+      if (d.status === "verified") {
+        return showFinal("ok", "Nomor terverifikasi", `Verifikasi berhasil pada ${fmtTime(d.verified_at)}. Silahkan kembali ke aplikasi ${d.project}.`);
+      }
+      if (d.status === "expired") {
+        return showFinal("expired", "Kode kedaluwarsa", `Kode ${d.code} sudah tidak berlaku. Minta kode baru dari aplikasi ${d.project}.`);
+      }
+
+      $("#final").hidden = true;
+      $("#pending").hidden = false;
+      $("#code").textContent = d.code;
+      $("#manualText").textContent = `${d.prefix}Verifikasi ${d.code}`;
+      $("#phoneHint").textContent = d.phone_hint ? `Kirim dari nomor ${d.phone_hint}` : "";
+      if (d.wa_link) {
+        $("#waBtn").href = d.wa_link;
+        $("#waBtn").removeAttribute("aria-disabled");
+      } else {
+        $("#waBtn").removeAttribute("href");
+        $("#waBtn").setAttribute("aria-disabled", "true");
+      }
+      $("#qrBox").hidden = !d.qr_svg;
+      if (d.qr_svg && $("#qr").dataset.code !== d.code) {
+        $("#qr").innerHTML = d.qr_svg; // SVG dari server kita sendiri (library qrcode)
+        $("#qr").dataset.code = d.code;
+      }
+      if (!tickTimer) {
+        tickTimer = setInterval(tick, 1000);
+        tick();
+      }
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(`/api/public/verifications/${encodeURIComponent(token)}`, { cache: "no-store" });
+        if (res.status === 404) {
+          return showFinal("bad", "Link tidak ditemukan", "Link verifikasi ini tidak valid atau sudah dihapus. Minta link baru dari aplikasi yang kamu gunakan.");
+        }
+        if (res.ok) {
+          const d = await res.json();
+          clockOffset = new Date(d.server_time) - Date.now();
+          render(d);
+          if (d.status !== "pending") return;
+        }
+      } catch {
+        // jaringan putus sesaat: coba lagi di polling berikutnya
+      }
+      pollTimer = setTimeout(load, document.hidden ? 10000 : 3000);
+    }
+
+    // Langsung cek lagi saat user kembali dari WhatsApp
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && data?.status === "pending") {
+        clearTimeout(pollTimer);
+        load();
+      }
+    });
+
+    $("#copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(data.code);
+        $("#copyBtn use").setAttribute("href", "#i-check");
+        setTimeout(() => $("#copyBtn use").setAttribute("href", "#i-copy"), 1500);
+      } catch {}
+    });
+
+    load();
+  </script>
+</body>
+</html>

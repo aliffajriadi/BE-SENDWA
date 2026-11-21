@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SendWA Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%2310b981'/><path d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <script>
+    // Terapkan tema sebelum render supaya tidak berkedip
+    try {
+      const t = localStorage.getItem("sendwa_theme");
+      if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+</head>
+<body>
+  <!-- SVG icon sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-logo" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .3-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.2-1.6-1.2-3s.8-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.2 1.1 2.2 1.4 2.5 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.3.7-.2l2 1c.3.1.5.2.6.3.1.2.1.8-.2 1.5Z"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8Zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zM2 10h20M6 15h4"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .8-3 2s1.3 1.7 3 2 3 .8 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6v2m0 8v2"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M20 12V8H6a2 2 0 0 1 0-4h12v4M4 6v12a2 2 0 0 0 2 2h14v-4M18 12a2 2 0 0 0 0 4h4v-4z"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 7l-8.5 8.5-5-5L2 17M16 7h6v6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.3-4.3"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 20h9M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6m5 5v6m4-6v6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 9h11v11H9zM5 15H4V4h11v1"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-2.6-6.4L21 8m0-5v5h-5"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM12 1v2m0 18v2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4M1 12h2m18 0h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Zm-3-10 2 2 4-4"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 8 12 3 3 8v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v16H4z"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/><circle cx="15" cy="15" r="1.3" fill="currentColor"/><circle cx="15" cy="9" r="1.3" fill="currentColor"/><circle cx="9" cy="15" r="1.3" fill="currentColor"/></symbol>
+  </svg>
+
+  <!-- ═════════════════════ LOGIN ═════════════════════ -->
+  <main id="login" class="login" hidden>
+    <div class="login-card">
+      <div class="brand brand-lg">
+        <span class="brand-mark"><svg><use href="#i-logo"/></svg></span>
+        <span>SendWA <b>Admin</b></span>
+      </div>
+      <h1>Selamat datang kembali</h1>
+      <p class="muted">Masuk dengan <code>API_KEY</code> dari file <code>.env</code> server.</p>
+      <form id="loginForm" class="stack">
+        <label class="field">
+          <span>API Key</span>
+          <input type="password" id="loginKey" placeholder="••••••••••••" autocomplete="current-password" required autofocus />
+        </label>
+        <p id="loginError" class="form-error" hidden></p>
+        <button class="btn btn-primary btn-block" type="submit" id="loginBtn">Masuk</button>
+      </form>
+    </div>
+    <p class="login-foot muted">BE-SENDWA · WhatsApp Bot Dashboard</p>
+  </main>
+
+  <!-- ═════════════════════ APP ═════════════════════ -->
+  <div id="app" class="app" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark"><svg><use href="#i-logo"/></svg></span>
+        <span>SendWA <b>Admin</b></span>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="nav-item" data-view="overview"><svg><use href="#i-grid"/></svg><span>Ringkasan</span></button>
+        <button class="nav-item" data-view="users"><svg><use href="#i-users"/></svg><span>Users</span></button>
+        <button class="nav-item" data-view="apikeys"><svg><use href="#i-key"/></svg><span>API Keys</span></button>
+        <button class="nav-item" data-view="payments"><svg><use href="#i-card"/></svg><span>Pembayaran</span></button>
+        <button class="nav-item" data-view="projects"><svg><use href="#i-box"/></svg><span>Projects</span></button>
+        <button class="nav-item" data-view="verifications"><svg><use href="#i-shield"/></svg><span>Verifikasi WA</span></button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="bot-status" id="botStatus">
+          <span class="dot"></span>
+          <div>
+            <div class="bot-status-label">Bot WhatsApp</div>
+            <div class="bot-status-text" id="botStatusText">Memeriksa…</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">Ringkasan</h1>
+          <p class="muted" id="viewSubtitle"></p>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="refreshBtn" title="Muat ulang data" aria-label="Muat ulang data"><svg><use href="#i-refresh"/></svg></button>
+          <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema"><svg><use href="#i-moon"/></svg></button>
+          <button class="icon-btn" id="logoutBtn" title="Keluar" aria-label="Keluar"><svg><use href="#i-logout"/></svg></button>
+        </div>
+      </header>
+
+      <!-- Overview -->
+      <section class="view" data-view="overview">
+        <div class="stats" id="stats">
+          <div class="stat"><div class="stat-icon tone-green"><svg><use href="#i-users"/></svg></div><div><div class="stat-label">Total User</div><div class="stat-value" data-stat="users">–</div></div></div>
+          <div class="stat"><div class="stat-icon tone-blue"><svg><use href="#i-coin"/></svg></div><div><div class="stat-label">Token Beredar</div><div class="stat-value" data-stat="totalToken">–</div></div></div>
+          <div class="stat"><div class="stat-icon tone-amber"><svg><use href="#i-wallet"/></svg></div><div><div class="stat-label">Total Saldo User</div><div class="stat-value" data-stat="totalSaldo">–</div></div></div>
+          <div class="stat"><div class="stat-icon tone-violet"><svg><use href="#i-trend"/></svg></div><div><div class="stat-label">Pendapatan QRIS</div><div class="stat-value" data-stat="revenue">–</div><div class="stat-sub" data-stat="paymentsSuccess"></div></div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><h2>Top user (token)</h2><button class="link-btn" data-goto="users">Lihat semua →</button></div>
+            <ul class="rank" id="topUsers"></ul>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Pembayaran terbaru</h2><button class="link-btn" data-goto="payments">Lihat semua →</button></div>
+            <ul class="feed" id="recentPayments"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Users -->
+      <section class="view" data-view="users" hidden>
+        <div class="toolbar">
+          <label class="search"><svg><use href="#i-search"/></svg><input type="search" id="userSearch" placeholder="Cari nama atau nomor…" /></label>
+          <button class="btn btn-primary" id="addUserBtn"><svg><use href="#i-plus"/></svg>Tambah User</button>
+        </div>
+        <div class="panel panel-flush">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th data-sort="name">Nama</th>
+                <th data-sort="nomor">Nomor</th>
+                <th data-sort="token" class="num">Token</th>
+                <th data-sort="saldo" class="num">Saldo</th>
+                <th>Free Event</th>
+                <th class="actions-col"></th>
+              </tr></thead>
+              <tbody id="usersBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="usersEmpty" hidden>Tidak ada user yang cocok.</div>
+          <div class="table-foot muted" id="usersCount"></div>
+        </div>
+      </section>
+
+      <!-- API Keys -->
+      <section class="view" data-view="apikeys" hidden>
+        <div class="toolbar">
+          <label class="search"><svg><use href="#i-search"/></svg><input type="search" id="keySearch" placeholder="Cari owner, ID, atau key…" /></label>
+          <button class="btn btn-primary" id="addKeyBtn"><svg><use href="#i-plus"/></svg>Tambah API Key</button>
+        </div>
+        <div class="panel panel-flush">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th data-sort="owner">Owner</th>
+                <th data-sort="id">ID</th>
+                <th>Key</th>
+                <th data-sort="token" class="num">Sisa Token</th>
+                <th data-sort="createdAt">Dibuat</th>
+                <th class="actions-col"></th>
+              </tr></thead>
+              <tbody id="keysBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="keysEmpty" hidden>Tidak ada API key yang cocok.</div>
+        </div>
+      </section>
+
+      <!-- Payments -->
+      <section class="view" data-view="payments" hidden>
+        <div class="toolbar">
+          <label class="search"><svg><use href="#i-search"/></svg><input type="search" id="paySearch" placeholder="Cari order ID, nama, atau nomor…" /></label>
+          <div class="segmented" id="payFilter">
+            <button data-status="" class="active">Semua</button>
+            <button data-status="success">Sukses</button>
+            <button data-status="pending">Pending</button>
+            <button data-status="canceled">Batal</button>
+          </div>
+        </div>
+        <div class="panel panel-flush">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Order ID</th>
+                <th>User</th>
+                <th>Produk</th>
+                <th class="num">Total</th>
+                <th>Status</th>
+                <th>Waktu</th>
+              </tr></thead>
+              <tbody id="payBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="payEmpty" hidden>Belum ada pembayaran.</div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section class="view" data-view="projects" hidden>
+        <div class="toolbar">
+          <p class="muted toolbar-note">Setiap project punya API key &amp; webhook secret sendiri, seperti merchant di payment gateway. <a href="/docs" target="_blank" rel="noopener">Dokumentasi API →</a></p>
+          <button class="btn btn-primary" id="addProjectBtn"><svg><use href="#i-plus"/></svg>Buat Project</button>
+        </div>
+        <div class="project-grid" id="projectGrid"></div>
+        <div class="panel empty" id="projectEmpty" hidden>Belum ada project. Buat satu untuk mendapatkan API key.</div>
+      </section>
+
+      <!-- Verifikasi WA -->
+      <section class="view" data-view="verifications" hidden>
+        <div class="toolbar">
+          <label class="search"><svg><use href="#i-search"/></svg><input type="search" id="verSearch" placeholder="Cari kode, nomor, atau reference…" /></label>
+          <div class="segmented" id="verFilter">
+            <button data-status="" class="active">Semua</button>
+            <button data-status="verified">Terverifikasi</button>
+            <button data-status="pending">Pending</button>
+            <button data-status="expired">Expired</button>
+          </div>
+          <select class="select" id="verProject" aria-label="Filter project"><option value="">Semua project</option></select>
+          <button class="btn btn-primary" id="addVerBtn"><svg><use href="#i-plus"/></svg>Buat Verifikasi</button>
+        </div>
+        <div class="panel panel-flush">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr>
+                <th>Kode</th>
+                <th>Project</th>
+                <th>Nomor</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Webhook</th>
+                <th>Dibuat</th>
+                <th class="actions-col"></th>
+              </tr></thead>
+              <tbody id="verBody"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="verEmpty" hidden>Belum ada verifikasi.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ═════════════════════ MODALS ═════════════════════ -->
+  <dialog id="userModal" class="modal">
+    <form method="dialog" id="userForm" class="modal-card">
+      <div class="modal-head">
+        <h2 id="userModalTitle">Tambah User</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="stack">
+        <label class="field"><span>Nomor WhatsApp</span><input id="fNomor" placeholder="628xxxxxxxxxx" inputmode="numeric" required /></label>
+        <label class="field"><span>Nama</span><input id="fName" required /></label>
+        <div class="row-2">
+          <label class="field"><span>Token</span><input type="number" id="fToken" value="0" min="0" required /></label>
+          <label class="field"><span>Saldo (Rp)</span><input type="number" id="fSaldo" value="0" min="0" required /></label>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="fFree" />
+          <span class="switch-track"></span>
+          <span>Masih bisa claim <b>.free</b></span>
+        </label>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="keyModal" class="modal">
+    <form method="dialog" id="keyForm" class="modal-card">
+      <div class="modal-head">
+        <h2 id="keyModalTitle">Tambah API Key</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="stack">
+        <label class="field"><span>ID</span><input id="kId" required /></label>
+        <label class="field">
+          <span>Key</span>
+          <div class="input-group">
+            <input id="kKey" class="mono" required />
+            <button type="button" class="btn btn-ghost" id="genKeyBtn" title="Generate key acak"><svg><use href="#i-dice"/></svg>Generate</button>
+          </div>
+        </label>
+        <div class="row-2">
+          <label class="field"><span>Owner</span><input id="kOwner" required /></label>
+          <label class="field"><span>Token</span><input type="number" id="kToken" value="0" min="0" required /></label>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="projectModal" class="modal">
+    <form method="dialog" id="projectForm" class="modal-card">
+      <div class="modal-head">
+        <h2 id="projectModalTitle">Buat Project</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="stack">
+        <label class="field"><span>Nama project</span><input id="pName" placeholder="TokoKu" required /></label>
+        <label class="field"><span>Webhook URL <small class="muted">(opsional)</small></span><input type="url" id="pWebhook" placeholder="https://api.tokoku.com/webhook/wa" /></label>
+        <label class="field"><span>Masa berlaku kode default (detik)</span><input type="number" id="pExpires" value="300" min="60" max="86400" required /></label>
+        <label class="field"><span>Respon bot saat user kirim verifikasi</span>
+          <select class="select select-field" id="pReply">
+            <option value="none">Tidak merespon (paling aman)</option>
+            <option value="reaction">Reaksi emoji ✅ ❌ ⌛</option>
+            <option value="message">Balas pesan teks</option>
+          </select></label>
+        <label class="field" id="pSuccessField" hidden><span>Pesan balasan saat berhasil <small class="muted">(opsional)</small></span>
+          <textarea id="pSuccess" rows="2" maxlength="1000" placeholder="✅ Verifikasi VERF-XXXXXX berhasil. Silahkan kembali ke aplikasi."></textarea></label>
+        <label class="switch">
+          <input type="checkbox" id="pActive" checked />
+          <span class="switch-track"></span>
+          <span>Project aktif</span>
+        </label>
+        <div class="stack" id="pCreds" hidden>
+          <div class="field"><span>API Key</span>
+            <div class="input-group"><input id="pKey" class="mono" readonly />
+              <button type="button" class="icon-btn" data-copy-input="pKey" title="Salin" aria-label="Salin API key"><svg><use href="#i-copy"/></svg></button>
+              <button type="button" class="icon-btn" data-rotate="api_key" title="Generate ulang" aria-label="Generate ulang API key"><svg><use href="#i-refresh"/></svg></button></div></div>
+          <div class="field"><span>Webhook Secret</span>
+            <div class="input-group"><input id="pSecret" class="mono" readonly />
+              <button type="button" class="icon-btn" data-copy-input="pSecret" title="Salin" aria-label="Salin webhook secret"><svg><use href="#i-copy"/></svg></button>
+              <button type="button" class="icon-btn" data-rotate="webhook_secret" title="Generate ulang" aria-label="Generate ulang webhook secret"><svg><use href="#i-refresh"/></svg></button></div></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="verModal" class="modal">
+    <form method="dialog" id="verForm" class="modal-card">
+      <div class="modal-head">
+        <h2>Buat Verifikasi</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="stack">
+        <p class="muted">Seperti membuat invoice: hasilnya link halaman verifikasi yang bisa kamu kirim ke user.</p>
+        <label class="field"><span>Project</span><select class="select select-field" id="vProject" required></select></label>
+        <label class="field"><span>Nomor WhatsApp user <small class="muted">(opsional, kalau diisi hanya nomor ini yang bisa)</small></span><input id="vPhone" placeholder="628xxxxxxxxxx" inputmode="tel" /></label>
+        <label class="field"><span>Reference <small class="muted">(opsional, misal nama / ID user)</small></span><input id="vRef" maxlength="191" placeholder="user_123" /></label>
+        <label class="field"><span>Masa berlaku (detik) <small class="muted">(kosong = default project)</small></span><input type="number" id="vExpires" min="60" max="86400" placeholder="300" /></label>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" data-close>Batal</button>
+        <button type="submit" class="btn btn-primary">Buat</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="verResultModal" class="modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head">
+        <h2>Verifikasi dibuat</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+      </div>
+      <div class="stack">
+        <div class="ver-code mono" id="vrCode"></div>
+        <p class="muted" id="vrExpires"></p>
+        <div class="field"><span>Link halaman verifikasi</span>
+          <div class="input-group">
+            <input id="vrLink" class="mono" readonly />
+            <button type="button" class="btn btn-ghost" id="vrCopy"><svg><use href="#i-copy"/></svg>Salin</button>
+          </div>
+        </div>
+        <p class="muted" style="font-size:13px">Kirim link ini ke user. Di sana ada tombol WhatsApp, QR code, hitung mundur, dan status yang berubah otomatis.</p>
+      </div>
+      <div class="modal-foot">
+        <a class="btn btn-ghost" id="vrShare" target="_blank" rel="noopener" hidden><svg><use href="#i-send"/></svg>Kirim ke user</a>
+        <a class="btn btn-primary" id="vrOpen" target="_blank" rel="noopener">Buka halaman</a>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmModal" class="modal modal-sm">
+    <form method="dialog" class="modal-card">
+      <div class="confirm-icon"><svg><use href="#i-trash"/></svg></div>
+      <h2 id="confirmTitle">Hapus?</h2>
+      <p class="muted" id="confirmText"></p>
+      <div class="modal-foot">
+        <button value="cancel" class="btn btn-ghost">Batal</button>
+        <button value="ok" class="btn btn-danger">Hapus</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

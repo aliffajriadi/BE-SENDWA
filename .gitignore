@@ -3,6 +3,8 @@ node_modules/
 
 # Ignore file .env (sangat penting!)
 .env
+.env*
+!.env.example
 
 
 auth/

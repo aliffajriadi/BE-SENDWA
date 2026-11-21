@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SendWA Verify Docs</title>
+  <meta name="description" content="Dokumentasi API verifikasi nomor WhatsApp SendWA untuk aplikasi client." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%2310b981'/><path d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <script>
+    try {
+      const t = localStorage.getItem("sendwa_theme");
+      if (t) document.documentElement.dataset.theme = t;
+    } catch {}
+  </script>
+  <style>
+    .docs { display: grid; grid-template-columns: 240px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; gap: 40px; padding: 0 24px; }
+    .docs-top {
+      position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+    }
+    .docs-top-inner { max-width: 1180px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .docs-top .tag { font-size: 12px; font-weight: 700; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; }
+    .toc { position: sticky; top: 76px; align-self: start; padding: 28px 0; max-height: calc(100vh - 76px); overflow-y: auto; }
+    .toc a { display: block; padding: 6px 12px; border-radius: 8px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 13px; border-left: 2px solid transparent; }
+    .toc a:hover { color: var(--text); background: var(--surface-2); }
+    .toc a.active { color: var(--primary); border-left-color: var(--primary); border-radius: 0 8px 8px 0; background: var(--primary-soft); }
+    .toc .toc-group { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; margin: 18px 12px 6px; }
+    .content { padding: 28px 0 96px; min-width: 0; }
+    .content section { padding-top: 12px; margin-bottom: 44px; scroll-margin-top: 72px; }
+    .content h1 { font-size: 32px; line-height: 1.2; margin-bottom: 10px; }
+    .content h2 { font-size: 22px; margin-bottom: 12px; }
+    .content h3 { font-size: 15px; margin: 22px 0 8px; }
+    .content p, .content li { color: var(--text); font-size: 15px; line-height: 1.7; max-width: 72ch; }
+    .content p + p { margin-top: 10px; }
+    .content ul, .content ol { padding-left: 22px; margin: 10px 0; }
+    .content a { color: var(--primary); font-weight: 600; text-underline-offset: 3px; }
+    .lead { font-size: 17px !important; color: var(--muted) !important; }
+    .endpoint { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-family: var(--mono); font-size: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin: 12px 0; }
+    .method { font-weight: 700; font-size: 12px; padding: 2px 8px; border-radius: 6px; }
+    .method.post { background: var(--primary-soft); color: var(--primary); }
+    .method.get { background: var(--blue-soft); color: var(--blue); }
+    .code { position: relative; margin: 12px 0; }
+    .code pre {
+      margin: 0; padding: 16px; padding-right: 56px; overflow-x: auto; border-radius: 12px;
+      background: #0d1714; color: #d7e7df; border: 1px solid var(--border);
+      font-family: var(--mono); font-size: 13px; line-height: 1.6;
+    }
+    .code .label { position: absolute; top: 0; left: 16px; transform: translateY(-50%); font-size: 11px; font-weight: 700; background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 1px 8px; border-radius: 999px; }
+    .code .copy { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-color: #22302b; background: #16211d; color: #8a9b94; }
+    .code .copy:hover { color: #e6efe9; background: #1d2b26; }
+    .tabs { display: flex; gap: 4px; margin-top: 12px; flex-wrap: wrap; }
+    .tabs button { border: 1px solid var(--border); background: var(--surface); padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; color: var(--muted); }
+    .tabs button[aria-selected="true"] { background: var(--primary-soft); color: var(--primary); border-color: transparent; }
+    .doc-table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+    .doc-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .doc-table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 10px 14px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+    .doc-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .doc-table tr:last-child td { border-bottom: 0; }
+    .doc-table td:first-child { white-space: nowrap; }
+    .callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: 12px; margin: 14px 0; border: 1px solid; font-size: 14px; }
+    .callout svg { margin-top: 2px; }
+    .callout.info { background: var(--blue-soft); border-color: color-mix(in srgb, var(--blue) 30%, transparent); }
+    .callout.info svg { color: var(--blue); }
+    .callout.warn { background: var(--amber-soft); border-color: color-mix(in srgb, var(--amber) 35%, transparent); }
+    .callout.warn svg { color: var(--amber); }
+    .callout p { font-size: 14px !important; }
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0; counter-reset: step; }
+    .flow-step { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; position: relative; }
+    .flow-step::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+    .flow-step b { display: block; margin-bottom: 4px; }
+    .flow-step span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .chat { max-width: 380px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+    .bubble { padding: 8px 12px; border-radius: 12px; font-size: 13px; white-space: pre-wrap; max-width: 85%; line-height: 1.5; }
+    .bubble.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    .bubble.bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+    @media (max-width: 900px) {
+      .docs { grid-template-columns: 1fr; gap: 0; padding: 0 16px; }
+      .toc { display: none; }
+      .docs-top-inner { padding: 12px 16px; }
+      .flow { grid-template-columns: 1fr 1fr; }
+      .content h1 { font-size: 26px; }
+    }
+    @media (max-width: 520px) { .flow { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-logo" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .3-3.4-.7-2.9-1.2-4.7-4.1-4.9-4.3-.1-.2-1.2-1.6-1.2-3s.8-2.1 1-2.4c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.4 1.8 2.2 1.2 1.1 2.2 1.4 2.5 1.6.3.1.5.1.7-.1l1-1.2c.2-.3.4-.3.7-.2l2 1c.3.1.5.2.6.3.1.2.1.8-.2 1.5Z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 9h11v11H9zM5 15H4V4h11v1"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-6v-5m0-3h.01"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4m0 4h.01"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10ZM12 1v2m0 18v2M4.2 4.2l1.4 1.4m12.8 12.8 1.4 1.4M1 12h2m18 0h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></symbol>
+  </svg>
+
+  <header class="docs-top">
+    <div class="docs-top-inner">
+      <div class="brand">
+        <span class="brand-mark"><svg><use href="#i-logo"/></svg></span>
+        <span>SendWA <b>Verify</b></span>
+        <span class="tag">API v1</span>
+      </div>
+      <button class="icon-btn" id="themeBtn" title="Ganti tema" aria-label="Ganti tema"><svg><use href="#i-moon"/></svg></button>
+    </div>
+  </header>
+
+  <div class="docs">
+    <nav class="toc" id="toc" aria-label="Daftar isi">
+      <div class="toc-group">Mulai</div>
+      <a href="#pengenalan">Pengenalan</a>
+      <a href="#alur">Alur verifikasi</a>
+      <a href="#autentikasi">Autentikasi</a>
+      <div class="toc-group">API</div>
+      <a href="#buat-verifikasi">Buat verifikasi</a>
+      <a href="#cek-status">Cek status</a>
+      <a href="#objek-verifikasi">Objek verifikasi</a>
+      <a href="#error">Error</a>
+      <div class="toc-group">Integrasi</div>
+      <a href="#halaman-verifikasi">Halaman verifikasi</a>
+      <a href="#pesan-whatsapp">Pesan WhatsApp</a>
+      <a href="#webhook">Webhook</a>
+      <a href="#verifikasi-signature">Verifikasi signature</a>
+      <a href="#contoh-lengkap">Contoh lengkap</a>
+      <a href="#testing">Testing</a>
+    </nav>
+
+    <main class="content">
+      <!-- ───────────── Pengenalan ───────────── -->
+      <section id="pengenalan">
+        <h1>Verifikasi nomor WhatsApp</h1>
+        <p class="lead">Pastikan nomor WhatsApp user benar-benar miliknya, tanpa mengirim OTP. User yang mengirim kode ke bot, lalu aplikasimu menerima webhook. Cara kerjanya mirip payment gateway.</p>
+        <p>Karena bot <b>tidak pernah memulai chat</b>, nomor bot jauh lebih aman dari banned dibanding OTP biasa. Secara default bot bahkan tidak merespon sama sekali.</p>
+        <div class="callout info">
+          <svg><use href="#i-info"/></svg>
+          <p>Base URL: <code class="base-url">https://domain-kamu.com</code>. Semua endpoint di bawah relatif terhadap URL ini.</p>
+        </div>
+      </section>
+
+      <!-- ───────────── Alur ───────────── -->
+      <section id="alur">
+        <h2>Alur verifikasi</h2>
+        <div class="flow">
+          <div class="flow-step"><b>Minta kode</b><span>Server aplikasimu memanggil <code>POST /api/v1/verifications</code>.</span></div>
+          <div class="flow-step"><b>Tampilkan ke user</b><span>Arahkan user ke WhatsApp dengan pesan berisi kode <code>VERF-XXXXXX</code>.</span></div>
+          <div class="flow-step"><b>User kirim pesan</b><span>Bot mencocokkan kode dan nomor pengirim. Respon ke user opsional (diam, emoji, atau pesan).</span></div>
+          <div class="flow-step"><b>Terima webhook</b><span>Server aplikasimu menerima <code>verification.success</code> dan menandai user terverifikasi.</span></div>
+        </div>
+        <p>Kalau webhook tidak sampai, kamu tetap bisa mengecek status lewat <a href="#cek-status">endpoint cek status</a>.</p>
+      </section>
+
+      <!-- ───────────── Autentikasi ───────────── -->
+      <section id="autentikasi">
+        <h2>Autentikasi</h2>
+        <p>Setiap aplikasi adalah satu <b>project</b>. Admin membuat project di dashboard dan memberikan dua kredensial:</p>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Kredensial</th><th>Format</th><th>Dipakai untuk</th></tr></thead>
+          <tbody>
+            <tr><td>API key</td><td><code>pk_live_…</code></td><td>Header <code>x-api-key</code> di setiap request ke API.</td></tr>
+            <tr><td>Webhook secret</td><td><code>whsec_…</code></td><td>Memeriksa tanda tangan webhook yang kamu terima.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="code"><pre>x-api-key: pk_live_xxxxxxxxxxxxxxxxxxxxxxxx</pre></div>
+        <div class="callout warn">
+          <svg><use href="#i-warn"/></svg>
+          <p>Simpan kedua kredensial <b>hanya di server</b>. Jangan taruh di frontend, aplikasi mobile, atau repository publik. Kalau bocor, minta admin men-generate ulang; yang lama langsung tidak berlaku.</p>
+        </div>
+      </section>
+
+      <!-- ───────────── Buat verifikasi ───────────── -->
+      <section id="buat-verifikasi">
+        <h2>Buat verifikasi</h2>
+        <div class="endpoint"><span class="method post">POST</span>/api/v1/verifications</div>
+        <p>Membuat kode verifikasi baru. Semua field body opsional.</p>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+          <tbody>
+            <tr><td><code>phone</code></td><td>string</td><td>Nomor user (<code>0812…</code>, <code>62812…</code>, atau <code>+62 812-…</code>). Kalau diisi, <b>hanya nomor ini</b> yang bisa memakai kodenya. Kalau kosong, nomor mana pun bisa, dan nomor pengirim dikembalikan di webhook.</td></tr>
+            <tr><td><code>reference</code></td><td>string</td><td>ID dari sistemmu (misal ID user), maks 191 karakter. Dikembalikan apa adanya di webhook.</td></tr>
+            <tr><td><code>expires_in</code></td><td>integer</td><td>Masa berlaku kode dalam detik, 60–86400. Default mengikuti pengaturan project (biasanya 300).</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="tabs" role="tablist" data-tabs="create">
+          <button role="tab" aria-selected="true" data-tab="curl">cURL</button>
+          <button role="tab" aria-selected="false" data-tab="node">Node.js</button>
+          <button role="tab" aria-selected="false" data-tab="php">PHP</button>
+          <button role="tab" aria-selected="false" data-tab="python">Python</button>
+        </div>
+        <div data-panel="create" data-tab="curl" class="code"><pre>curl -X POST <span class="base-url">https://domain-kamu.com</span>/api/v1/verifications \
+  -H "x-api-key: pk_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "phone": "081234567890", "reference": "user_123", "expires_in": 600 }'</pre></div>
+        <div data-panel="create" data-tab="node" class="code" hidden><pre>const res = await fetch("<span class="base-url">https://domain-kamu.com</span>/api/v1/verifications", {
+  method: "POST",
+  headers: { "x-api-key": process.env.SENDWA_API_KEY, "Content-Type": "application/json" },
+  body: JSON.stringify({ phone: "081234567890", reference: "user_123", expires_in: 600 }),
+});
+const data = await res.json();
+if (!res.ok) throw new Error(data.message);</pre></div>
+        <div data-panel="create" data-tab="php" class="code" hidden><pre>$ch = curl_init("<span class="base-url">https://domain-kamu.com</span>/api/v1/verifications");
+curl_setopt_array($ch, [
+  CURLOPT_POST =&gt; true,
+  CURLOPT_RETURNTRANSFER =&gt; true,
+  CURLOPT_HTTPHEADER =&gt; ["x-api-key: " . getenv("SENDWA_API_KEY"), "Content-Type: application/json"],
+  CURLOPT_POSTFIELDS =&gt; json_encode(["phone" =&gt; "081234567890", "reference" =&gt; "user_123", "expires_in" =&gt; 600]),
+]);
+$data = json_decode(curl_exec($ch), true);</pre></div>
+        <div data-panel="create" data-tab="python" class="code" hidden><pre>import os, requests
+
+res = requests.post(
+    "<span class="base-url">https://domain-kamu.com</span>/api/v1/verifications",
+    headers={"x-api-key": os.environ["SENDWA_API_KEY"]},
+    json={"phone": "081234567890", "reference": "user_123", "expires_in": 600},
+    timeout=10,
+)
+res.raise_for_status()
+data = res.json()</pre></div>
+
+        <h3>Response <span class="badge badge-green">201 Created</span></h3>
+        <div class="code"><pre>{
+  "id": "cmi8x2k1p0001a8z3",
+  "code": "VERF-8K2D9Q",
+  "phone": "6281234567890",
+  "reference": "user_123",
+  "status": "pending",
+  "prefix": "@",
+  "bot_number": "6281111111111",
+  "wa_link": "https://wa.me/6281111111111?text=%40Verifikasi%20VERF-8K2D9Q",
+  "verification_url": "https://domain-kamu.com/verify/gQvVZmP6SzpeIs7qvk4fxpjm",
+  "expires_at": "2026-11-21T10:10:00.000Z",
+  "verified_at": null,
+  "webhook_status": null,
+  "created_at": "2026-11-21T10:00:00.000Z"
+}</pre></div>
+        <p>Simpan <code>id</code> di databasemu. Lalu pilih: <b>redirect user ke <code>verification_url</code></b> (paling mudah, lihat <a href="#halaman-verifikasi">halaman verifikasi</a>), atau susun sendiri <a href="#pesan-whatsapp">pesan WhatsApp</a>-nya.</p>
+      </section>
+
+      <!-- ───────────── Cek status ───────────── -->
+      <section id="cek-status">
+        <h2>Cek status</h2>
+        <div class="endpoint"><span class="method get">GET</span>/api/v1/verifications/:id</div>
+        <p>Mengembalikan <a href="#objek-verifikasi">objek verifikasi</a> terbaru. Pakai ini sebagai cadangan kalau webhook tidak sampai, misalnya polling tiap beberapa detik selama user masih di halaman verifikasi. Hanya bisa membaca verifikasi milik project-mu sendiri.</p>
+        <div class="code"><pre>curl <span class="base-url">https://domain-kamu.com</span>/api/v1/verifications/cmi8x2k1p0001a8z3 \
+  -H "x-api-key: pk_live_xxx"</pre></div>
+      </section>
+
+      <!-- ───────────── Objek ───────────── -->
+      <section id="objek-verifikasi">
+        <h2>Objek verifikasi</h2>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Field</th><th>Keterangan</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>ID verifikasi.</td></tr>
+            <tr><td><code>code</code></td><td>Kode unik, format <code>VERF-XXXXXX</code> (6 karakter huruf/angka).</td></tr>
+            <tr><td><code>phone</code></td><td>Nomor yang terverifikasi. Sebelum verifikasi berisi <code>phone</code> dari request (atau <code>null</code>).</td></tr>
+            <tr><td><code>reference</code></td><td>Nilai <code>reference</code> dari request.</td></tr>
+            <tr><td><code>status</code></td><td><span class="badge badge-amber">pending</span> menunggu pesan user · <span class="badge badge-green">verified</span> berhasil · <span class="badge badge-gray">expired</span> lewat <code>expires_at</code> sebelum diverifikasi.</td></tr>
+            <tr><td><code>prefix</code></td><td>Karakter awal wajib pesan WhatsApp, saat ini <code>@</code>.</td></tr>
+            <tr><td><code>bot_number</code></td><td>Nomor WhatsApp bot tujuan pesan.</td></tr>
+            <tr><td><code>wa_link</code></td><td>Link <code>wa.me</code> siap pakai dengan pesan default.</td></tr>
+            <tr><td><code>verification_url</code></td><td>Halaman verifikasi siap pakai untuk user (seperti <code>invoice_url</code> di payment gateway).</td></tr>
+            <tr><td><code>expires_at</code></td><td>Batas waktu kode (ISO 8601, UTC).</td></tr>
+            <tr><td><code>verified_at</code></td><td>Waktu berhasil diverifikasi, atau <code>null</code>.</td></tr>
+            <tr><td><code>webhook_status</code></td><td><code>sent</code>, <code>failed</code>, atau <code>null</code> (belum dikirim / project tanpa webhook).</td></tr>
+            <tr><td><code>created_at</code></td><td>Waktu verifikasi dibuat.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <!-- ───────────── Error ───────────── -->
+      <section id="error">
+        <h2>Error</h2>
+        <p>Error selalu berbentuk JSON <code>{ "message": "…" }</code>.</p>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Status</th><th>Arti</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>Input tidak valid, misal <code>expires_in</code> di luar 60–86400 atau <code>phone</code> terlalu pendek.</td></tr>
+            <tr><td><code>401</code></td><td>Header <code>x-api-key</code> tidak ada atau salah.</td></tr>
+            <tr><td><code>403</code></td><td>Project sedang dinonaktifkan admin.</td></tr>
+            <tr><td><code>404</code></td><td>Verifikasi tidak ditemukan (atau milik project lain).</td></tr>
+            <tr><td><code>429</code></td><td>Terlalu banyak request, maks 60 verifikasi baru per menit per project.</td></tr>
+            <tr><td><code>503</code></td><td>Bot WhatsApp sedang tidak terhubung. Coba lagi beberapa saat.</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <!-- ───────────── Halaman verifikasi ───────────── -->
+      <section id="halaman-verifikasi">
+        <h2>Halaman verifikasi</h2>
+        <p>Tidak mau membuat UI sendiri? Redirect user ke <code>verification_url</code>, seperti mengarahkan pembeli ke halaman invoice payment gateway. Di halaman itu user mendapat:</p>
+        <ul>
+          <li>Kode verifikasi dan tombol <b>Verifikasi via WhatsApp</b> (pesan sudah terisi).</li>
+          <li>QR code untuk membuka WhatsApp di HP kalau user sedang di laptop.</li>
+          <li>Hitung mundur masa berlaku, dan status yang berubah otomatis menjadi <span class="badge badge-green">Terverifikasi</span> atau <span class="badge badge-gray">Kedaluwarsa</span>.</li>
+        </ul>
+        <p>Halaman ini hanya menampilkan nama project, kode, status, dan 4 digit terakhir nomor. <code>reference</code> dan data lain tidak pernah ditampilkan. Webhook tetap dikirim seperti biasa.</p>
+        <p>Admin juga bisa membuat verifikasi manual dari dashboard (<b>Verifikasi WA → Buat Verifikasi</b>) lalu mengirim link-nya ke user.</p>
+      </section>
+
+      <!-- ───────────── Pesan WhatsApp ───────────── -->
+      <section id="pesan-whatsapp">
+        <h2>Pesan WhatsApp</h2>
+        <p>Isi pesan <b>bebas kamu susun sendiri</b>, asal memenuhi dua aturan:</p>
+        <ol>
+          <li>Pesan <b>diawali <code>@</code></b> (karakter pertama).</li>
+          <li>Pesan <b>berisi kode</b> <code>VERF-XXXXXX</code> di mana saja. Huruf besar/kecil tidak masalah.</li>
+        </ol>
+        <div class="code"><span class="label">Node.js</span><pre>const text = `@Halo, saya ingin verifikasi akun TokoKu.
+Kode: ${data.code}
+
+Setelah mengirim pesan ini, silahkan kembali ke web:
+https://tokoku.com/verify`;
+
+const link = `https://wa.me/${data.bot_number}?text=${encodeURIComponent(text)}`;
+// tampilkan link sebagai tombol "Verifikasi via WhatsApp"</pre></div>
+        <p>Kalau tidak perlu pesan custom, pakai saja <code>wa_link</code> dari response.</p>
+
+        <h3>Respon bot</h3>
+        <p>Admin memilih respon bot per project. Default-nya <b>tidak merespon</b>, karena bot yang tidak mengirim pesan paling aman dari banned. Status verifikasi tetap kamu ketahui lewat webhook atau cek status.</p>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Mode</th><th>Yang diterima user</th></tr></thead>
+          <tbody>
+            <tr><td><code>none</code> (default)</td><td>Tidak ada respon apa pun.</td></tr>
+            <tr><td><code>reaction</code></td><td>Reaksi emoji di pesan user: ✅ berhasil · ⌛ kedaluwarsa · ❌ nomor tidak sesuai · ℹ️ kode sudah dipakai.</td></tr>
+            <tr><td><code>message</code></td><td>Balasan teks. Pesan sukses bisa diatur admin; pesan gagal menjelaskan alasannya (kedaluwarsa, nomor tidak sesuai, sudah dipakai).</td></tr>
+          </tbody>
+        </table></div>
+        <div class="chat" aria-label="Contoh mode message">
+          <div class="bubble me">@Halo, saya ingin verifikasi akun TokoKu.
+Kode: VERF-8K2D9Q</div>
+          <div class="bubble bot">✅ Verifikasi VERF-8K2D9Q berhasil. Silahkan kembali ke aplikasi.</div>
+        </div>
+        <p>Di semua mode, bot <b>selalu diam</b> kalau pesan tidak berisi kode, kodenya tidak dikenal, atau nomor yang sama mencoba lebih dari 5 kali per menit.</p>
+        <div class="callout info">
+          <svg><use href="#i-info"/></svg>
+          <p>Pesan tanpa awalan <code>@</code> tidak dianggap verifikasi, walaupun berisi kode. Verifikasi hanya lewat chat pribadi, bukan grup.</p>
+        </div>
+      </section>
+
+      <!-- ───────────── Webhook ───────────── -->
+      <section id="webhook">
+        <h2>Webhook</h2>
+        <p>Saat verifikasi berhasil, SendWA mengirim <code>POST</code> ke <b>Webhook URL</b> project. Balas dengan status <code>2xx</code> dalam 10 detik.</p>
+        <div class="code"><span class="label">Request ke server kamu</span><pre>POST /webhook/wa HTTP/1.1
+Content-Type: application/json
+X-Webhook-Event: verification.success
+X-Webhook-Timestamp: 1763719333
+X-Webhook-Signature: sha256=5f2b0c…e91a
+
+{
+  "event": "verification.success",
+  "id": "cmi8x2k1p0001a8z3",
+  "code": "VERF-8K2D9Q",
+  "phone": "6281234567890",
+  "reference": "user_123",
+  "verified_at": "2026-11-21T10:02:13.000Z"
+}</pre></div>
+        <ul>
+          <li>Webhook dikirim <b>sekali</b>. Kalau gagal (timeout / bukan 2xx), statusnya <code>failed</code>. Admin bisa mengirim ulang dari dashboard, atau kamu cek lewat <a href="#cek-status">cek status</a>.</li>
+          <li>Proses secara <b>idempoten</b>: webhook yang sama bisa datang lebih dari sekali (misal saat dikirim ulang). Cek <code>id</code> sebelum mengubah data.</li>
+          <li>Kalau project tidak punya Webhook URL, tidak ada webhook. Gunakan polling.</li>
+        </ul>
+      </section>
+
+      <!-- ───────────── Signature ───────────── -->
+      <section id="verifikasi-signature">
+        <h2>Verifikasi signature</h2>
+        <p>Selalu periksa bahwa webhook benar-benar dari SendWA:</p>
+        <ol>
+          <li>Ambil <b>raw body</b> (string asli, sebelum di-parse JSON).</li>
+          <li>Hitung <code>HMAC-SHA256(webhook_secret, timestamp + "." + raw_body)</code> dalam hex.</li>
+          <li>Bandingkan dengan <code>X-Webhook-Signature</code> (tanpa awalan <code>sha256=</code>) memakai perbandingan <i>constant-time</i>.</li>
+          <li>Tolak kalau <code>X-Webhook-Timestamp</code> lebih dari 5 menit dari waktu sekarang, untuk mencegah <i>replay</i>.</li>
+        </ol>
+
+        <div class="tabs" role="tablist" data-tabs="sig">
+          <button role="tab" aria-selected="true" data-tab="node">Node.js (Express)</button>
+          <button role="tab" aria-selected="false" data-tab="php">PHP (Laravel)</button>
+          <button role="tab" aria-selected="false" data-tab="python">Python (Flask)</button>
+        </div>
+        <div data-panel="sig" data-tab="node" class="code"><pre>import crypto from "node:crypto";
+import express from "express";
+
+const app = express();
+
+// Pakai express.raw supaya body tetap string asli
+app.post("/webhook/wa", express.raw({ type: "application/json" }), (req, res) =&gt; {
+  const ts = req.get("X-Webhook-Timestamp") ?? "";
+  const sig = (req.get("X-Webhook-Signature") ?? "").replace(/^sha256=/, "");
+  const raw = req.body.toString("utf8");
+
+  const expected = crypto
+    .createHmac("sha256", process.env.SENDWA_WEBHOOK_SECRET)
+    .update(`${ts}.${raw}`)
+    .digest("hex");
+
+  const fresh = Math.abs(Date.now() / 1000 - Number(ts)) &lt; 300;
+  const valid =
+    fresh &amp;&amp;
+    sig.length === expected.length &amp;&amp;
+    crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  if (!valid) return res.status(401).end();
+
+  const event = JSON.parse(raw);
+  // TODO: tandai user (event.reference) terverifikasi dengan nomor event.phone
+  res.sendStatus(200);
+});</pre></div>
+        <div data-panel="sig" data-tab="php" class="code" hidden><pre>use Illuminate\Http\Request;
+
+Route::post('/webhook/wa', function (Request $request) {
+    $ts  = $request-&gt;header('X-Webhook-Timestamp', '');
+    $sig = preg_replace('/^sha256=/', '', $request-&gt;header('X-Webhook-Signature', ''));
+    $raw = $request-&gt;getContent();
+
+    $expected = hash_hmac('sha256', $ts . '.' . $raw, env('SENDWA_WEBHOOK_SECRET'));
+
+    if (abs(time() - (int) $ts) &gt; 300 || !hash_equals($expected, $sig)) {
+        abort(401);
+    }
+
+    $event = json_decode($raw, true);
+    // TODO: tandai user ($event['reference']) terverifikasi dengan nomor $event['phone']
+    return response()-&gt;noContent();
+});</pre></div>
+        <div data-panel="sig" data-tab="python" class="code" hidden><pre>import hashlib, hmac, os, time
+from flask import Flask, request, abort
+
+app = Flask(__name__)
+
+@app.post("/webhook/wa")
+def webhook():
+    ts = request.headers.get("X-Webhook-Timestamp", "")
+    sig = request.headers.get("X-Webhook-Signature", "").removeprefix("sha256=")
+    raw = request.get_data(as_text=True)
+
+    expected = hmac.new(
+        os.environ["SENDWA_WEBHOOK_SECRET"].encode(),
+        f"{ts}.{raw}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not ts.isdigit() or abs(time.time() - int(ts)) &gt; 300 or not hmac.compare_digest(expected, sig):
+        abort(401)
+
+    event = request.get_json()
+    # TODO: tandai user (event["reference"]) terverifikasi dengan nomor event["phone"]
+    return "", 204</pre></div>
+      </section>
+
+      <!-- ───────────── Contoh lengkap ───────────── -->
+      <section id="contoh-lengkap">
+        <h2>Contoh lengkap</h2>
+        <p>Endpoint di backend-mu yang dipanggil frontend saat user menekan "Verifikasi via WhatsApp". API key tetap di server.</p>
+        <div class="code"><span class="label">Node.js (Express)</span><pre>app.post("/me/verify-whatsapp", requireLogin, async (req, res) =&gt; {
+  const r = await fetch("<span class="base-url">https://domain-kamu.com</span>/api/v1/verifications", {
+    method: "POST",
+    headers: { "x-api-key": process.env.SENDWA_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ phone: req.user.phone, reference: String(req.user.id), expires_in: 600 }),
+  });
+  const v = await r.json();
+  if (!r.ok) return res.status(502).json({ message: v.message });
+
+  await db.user.update({ where: { id: req.user.id }, data: { wa_verification_id: v.id } });
+
+  const text = `@Halo, saya ingin verifikasi akun TokoKu.\nKode: ${v.code}`;
+  res.json({
+    code: v.code,
+    expires_at: v.expires_at,
+    link: `https://wa.me/${v.bot_number}?text=${encodeURIComponent(text)}`,
+  });
+});</pre></div>
+      </section>
+
+      <!-- ───────────── Testing ───────────── -->
+      <section id="testing">
+        <h2>Testing</h2>
+        <ul>
+          <li>Di dashboard admin → <b>Projects</b>, tombol <b>Test</b> membuat kode baru dan membuka WhatsApp, tanpa perlu menulis kode.</li>
+          <li>Untuk menerima webhook di laptop, pakai tunnel (misal ngrok atau cloudflared) lalu isi URL-nya sebagai Webhook URL project.</li>
+          <li>Riwayat dan status webhook ada di dashboard → <b>Verifikasi WA</b>. Webhook yang gagal bisa dikirim ulang dari sana.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+    // Base URL mengikuti server tempat halaman ini dibuka
+    $$(".base-url").forEach((el) => (el.textContent = location.origin));
+
+    // Tema (sama dengan dashboard admin)
+    const isDark = () =>
+      document.documentElement.dataset.theme
+        ? document.documentElement.dataset.theme === "dark"
+        : matchMedia("(prefers-color-scheme: dark)").matches;
+    const syncTheme = () => $("#themeBtn use").setAttribute("href", isDark() ? "#i-sun" : "#i-moon");
+    $("#themeBtn").addEventListener("click", () => {
+      const next = isDark() ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("sendwa_theme", next); } catch {}
+      syncTheme();
+    });
+    syncTheme();
+
+    // Tombol salin di setiap blok kode
+    $$(".code").forEach((block) => {
+      const btn = document.createElement("button");
+      btn.className = "icon-btn copy";
+      btn.type = "button";
+      btn.title = "Salin";
+      btn.setAttribute("aria-label", "Salin kode");
+      btn.innerHTML = '<svg><use href="#i-copy"/></svg>';
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText($("pre", block).innerText);
+          $("use", btn).setAttribute("href", "#i-check");
+          setTimeout(() => $("use", btn).setAttribute("href", "#i-copy"), 1500);
+        } catch {}
+      });
+      block.append(btn);
+    });
+
+    // Tab bahasa
+    $$("[data-tabs]").forEach((list) => {
+      const group = list.dataset.tabs;
+      list.addEventListener("click", (e) => {
+        const tab = e.target.closest("[data-tab]");
+        if (!tab) return;
+        $$("[data-tab]", list).forEach((b) => b.setAttribute("aria-selected", String(b === tab)));
+        $$(`[data-panel="${group}"]`).forEach((p) => (p.hidden = p.dataset.tab !== tab.dataset.tab));
+      });
+    });
+
+    // Sorot bagian yang sedang dibaca di daftar isi
+    const links = $$("#toc a");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          links.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === `#${entry.target.id}`));
+        });
+      },
+      { rootMargin: "-80px 0px -70% 0px" },
+    );
+    $$(".content section").forEach((s) => observer.observe(s));
+  </script>
+</body>
+</html>
