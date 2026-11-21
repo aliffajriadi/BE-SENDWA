@@ -25,11 +25,16 @@ const isLimited = (sender) => {
  */
 export const handleVerification = async (sock, msg, text) => {
   const sender = await resolveSender(sock, msg.key);
-  if (isLimited(sender)) return; // diam saja, supaya bot tidak ikut spam
+  if (isLimited(sender)) {
+    console.log(`[Verification] ${sender} kena rate limit, diabaikan`);
+    return; // diam saja, supaya bot tidak ikut spam
+  }
 
   try {
     const result = await verifyFromMessage(text, stripJid(sender));
-    if (!result || result.mode === "none") return;
+    // Log ringkas supaya hasil verifikasi kelihatan di pm2 logs walau bot tidak merespon
+    console.log(`[Verification] ${sender} ${result.code ?? "(tanpa kode)"} → ${result.result}`);
+    if (!result.mode || result.mode === "none") return;
 
     const jid = msg.key.remoteJid;
     if (result.mode === "reaction") {

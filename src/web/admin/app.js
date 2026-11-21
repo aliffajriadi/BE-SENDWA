@@ -536,7 +536,8 @@ function renderProjects() {
     .map(
       (p) => `<article class="panel project-card ${p.active ? "" : "inactive"}">
         <div class="project-head">
-          <div><h3>${esc(p.name)}</h3>${p.active ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-gray">Nonaktif</span>'}</div>
+          <div><h3>${esc(p.name)}</h3>${p.active ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-gray">Nonaktif</span>'}
+            ${p.sandbox ? '<span class="badge badge-amber">Sandbox</span>' : ""}</div>
           <div class="cell-actions">
             <button class="icon-btn" data-edit-project="${esc(p.id)}" title="Edit" aria-label="Edit project"><svg><use href="#i-edit"/></svg></button>
             <button class="icon-btn danger" data-del-project="${esc(p.id)}" title="Hapus" aria-label="Hapus project"><svg><use href="#i-trash"/></svg></button>
@@ -567,7 +568,23 @@ function renderProjects() {
 }
 
 /** Tampilkan hasil verifikasi baru seperti invoice: kode + link halaman verifikasi. */
+let resultVer = null;
+
+async function simulateVer(id) {
+  try {
+    await api(`/verifications/${encodeURIComponent(id)}/simulate`, { method: "POST", body: {} });
+    toast("Simulasi berhasil, webhook dikirim ke project");
+    loadAll({ silent: true });
+    return true;
+  } catch (error) {
+    toast(error.message, "error");
+    return false;
+  }
+}
+
 function showVerResult(v) {
+  resultVer = v;
+  $("#vrSimulate").hidden = !v.sandbox;
   $("#vrCode").textContent = v.code;
   $("#vrExpires").textContent = `${v.project} · berlaku sampai ${dateFmt(v.expires_at)}`;
   $("#vrLink").value = v.verification_url;
@@ -593,6 +610,7 @@ function openProjectModal(p) {
   $("#pReply").value = p?.reply_mode ?? "none";
   $("#pSuccessField").hidden = $("#pReply").value !== "message";
   $("#pActive").checked = p?.active ?? true;
+  $("#pSandbox").checked = p?.sandbox ?? false;
   $("#pCreds").hidden = !p;
   $("#pKey").value = p?.api_key ?? "";
   $("#pSecret").value = p?.webhook_secret ?? "";
@@ -650,6 +668,7 @@ $("#projectForm").addEventListener("submit", async (e) => {
     reply_mode: $("#pReply").value,
     success_message: $("#pSuccess").value.trim(),
     active: $("#pActive").checked,
+    sandbox: $("#pSandbox").checked,
   };
   try {
     if (editingProject) {
@@ -702,6 +721,7 @@ function renderVerifications() {
   $("#verBody").innerHTML = list
     .map((v) => {
       const canResend = v.status === "verified" && v.project?.webhook_url;
+      const canSimulate = v.status === "pending" && v.project?.sandbox;
       return `<tr>
         <td class="mono cell-main" data-label="Kode">${esc(v.code)}</td>
         <td data-label="Project">${esc(v.project?.name || "-")}</td>
@@ -712,6 +732,7 @@ function renderVerifications() {
         <td class="muted" data-label="Dibuat">${dateFmt(v.createdAt)}</td>
         <td class="cell-actions-td"><div class="cell-actions">
           <button class="icon-btn" data-copy-ver="${esc(v.verification_url)}" title="Salin link verifikasi" aria-label="Salin link verifikasi"><svg><use href="#i-copy"/></svg></button>
+          ${canSimulate ? `<button class="icon-btn" data-sim-ver="${esc(v.id)}" title="Simulasi verifikasi berhasil (sandbox)" aria-label="Simulasi verifikasi berhasil"><svg><use href="#i-check"/></svg></button>` : ""}
           ${canResend ? `<button class="icon-btn" data-resend-ver="${esc(v.id)}" title="Kirim ulang webhook" aria-label="Kirim ulang webhook"><svg><use href="#i-send"/></svg></button>` : ""}
           <button class="icon-btn danger" data-del-ver="${esc(v.id)}" title="Hapus" aria-label="Hapus"><svg><use href="#i-trash"/></svg></button>
         </div></td>
@@ -735,6 +756,8 @@ $("#verFilter").addEventListener("click", (e) => {
 });
 
 $("#verBody").addEventListener("click", async (e) => {
+  const sim = e.target.closest("[data-sim-ver]");
+  if (sim) simulateVer(sim.dataset.simVer);
   const copyLink = e.target.closest("[data-copy-ver]");
   if (copyLink) copyText(copyLink.dataset.copyVer, "Link verifikasi");
   const resend = e.target.closest("[data-resend-ver]");
@@ -760,6 +783,10 @@ $("#verBody").addEventListener("click", async (e) => {
       }
     }
   }
+});
+
+$("#vrSimulate").addEventListener("click", async () => {
+  if (resultVer && (await simulateVer(resultVer.id))) $("#verResultModal").close();
 });
 
 $("#vrCopy").addEventListener("click", () => copyText($("#vrLink").value, "Link"));

@@ -72,6 +72,7 @@ Tambahkan `owner: true` untuk command khusus owner.
 | POST | `/api/webhook2-payment?key=` | query key | Webhook Pakasir QRIS (token) |
 | POST | `/api/v1/verifications` | `x-api-key` project | Buat verifikasi WA |
 | GET | `/api/v1/verifications/:id` | `x-api-key` project | Cek status verifikasi |
+| POST | `/api/v1/verifications/:id/simulate` | `x-api-key` project | Simulasi verifikasi berhasil (project sandbox saja) |
 | GET | `/api/public/verifications/:token` | – | Data halaman verifikasi publik `/verify/:token` |
 | * | `/api/admin/*` | `x-api-key` master | API dashboard admin |
 
@@ -154,3 +155,14 @@ const valid =
   Math.abs(Date.now() / 1000 - Number(ts)) < 300; // tolak webhook lama (replay)
 if (!valid) return res.status(401).end();
 ```
+
+### 4. Simulasi (sandbox)
+
+Untuk development tanpa WhatsApp: aktifkan **Mode sandbox** di project (dashboard → Projects → Edit), lalu:
+
+```bash
+curl -X POST http://localhost:3000/api/v1/verifications/<id>/simulate -H "x-api-key: pk_live_xxx" \
+  -H "Content-Type: application/json" -d '{"phone": "081234567890"}'   # phone opsional
+```
+
+Status jadi `verified` dan webhook dikirim sungguhan (signature valid). Bisa juga lewat tombol simulasi di halaman `verification_url` atau di dashboard. Project non-sandbox menolak simulasi (`403`).

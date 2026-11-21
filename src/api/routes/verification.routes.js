@@ -8,6 +8,7 @@ import {
   createVerification,
   effectiveStatus,
   PREFIX,
+  simulateVerification,
   toPayload,
   waLink,
 } from "../../features/verification/verification.js";
@@ -25,6 +26,12 @@ const publicLimiter = rateLimit({
   max: 120, // per IP per menit (halaman polling tiap beberapa detik)
   message: { message: "Terlalu banyak request, coba lagi nanti." },
 });
+
+/** Kirim error 4xx dari simulateVerification sebagai JSON, lempar error lain. */
+const sendKnownError = (res, error) => {
+  if (!error.status) throw error;
+  res.status(error.status).json({ message: error.message });
+};
 
 /** API verifikasi WA untuk app external. Auth: header x-api-key = api key project. */
 export const verificationRoutes = ({ getSock }) => {
@@ -53,11 +60,25 @@ export const verificationRoutes = ({ getSock }) => {
     res.json(toPayload(v, botNumber(getSock()), baseUrl(req)));
   });
 
+  // Simulasi user mengirim kode (hanya project sandbox). Body opsional: { phone }
+  router.post("/v1/verifications/:id/simulate", async (req, res) => {
+    const v = await prisma.verification.findFirst({
+      where: { id: req.params.id, project_id: req.project.id },
+      include: { project: true },
+    });
+    if (!v) return res.status(404).json({ message: "Verifikasi tidak ditemukan" });
+    try {
+      res.json(toPayload(await simulateVerification(v, req.body?.phone), botNumber(getSock()), baseUrl(req)));
+    } catch (error) {
+      sendKnownError(res, error);
+    }
+  });
+
   // ── Publik: data untuk halaman /verify/<token> (tanpa auth) ──
   router.get("/public/verifications/:token", publicLimiter, async (req, res) => {
     const v = await prisma.verification.findUnique({
       where: { token: req.params.token },
-      include: { project: { select: { name: true, active: true } } },
+      include: { project: { select: { name: true, active: true, sandbox: true } } },
     });
     if (!v || !v.project.active) return res.status(404).json({ message: "Link verifikasi tidak ditemukan" });
 
@@ -73,8 +94,21 @@ export const verificationRoutes = ({ getSock }) => {
       verified_at: v.verified_at,
       wa_link: link,
       qr_svg: link ? await QRCode.toString(link, { type: "svg", margin: 1, errorCorrectionLevel: "M" }) : null,
+      sandbox: v.project.sandbox,
       server_time: new Date(),
     });
+  });
+
+  // Tombol simulasi di halaman verifikasi (hanya project sandbox)
+  router.post("/public/verifications/:token/simulate", publicLimiter, async (req, res) => {
+    const v = await prisma.verification.findUnique({ where: { token: req.params.token }, include: { project: true } });
+    if (!v || !v.project.active) return res.status(404).json({ message: "Link verifikasi tidak ditemukan" });
+    try {
+      await simulateVerification(v);
+      res.json({ success: true });
+    } catch (error) {
+      sendKnownError(res, error);
+    }
   });
 
   return router;

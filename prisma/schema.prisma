@@ -58,6 +58,7 @@ model Project {
   success_message String?        // dipakai kalau reply_mode = message (null = default)
   expires_in      Int            @default(300) // detik, default kalau request tidak mengirim expires_in
   active          Boolean        @default(true)
+  sandbox         Boolean        @default(false) // true = boleh simulasi verifikasi tanpa WhatsApp (untuk development)
   verifications   Verification[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt

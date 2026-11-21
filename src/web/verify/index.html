@@ -49,6 +49,10 @@
     .foot svg { width: 14px; height: 14px; color: var(--primary); }
     .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 0 var(--amber); animation: pulse 1.6s infinite; }
     @keyframes pulse { 70% { box-shadow: 0 0 0 8px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+    .sandbox { border: 1px dashed var(--amber); background: var(--amber-soft); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .sandbox p { font-size: 13px; }
+    .sandbox b { color: var(--amber); }
+    .sandbox .btn { width: 100%; }
     .waiting { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--muted); }
     @media (hover: none) and (pointer: coarse) { .qr { display: none; } } /* di HP cukup tombol */
     @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
@@ -94,6 +98,10 @@
         <li>Kirim pesan yang sudah terisi <b>tanpa mengubahnya</b>.<br />Atau ketik manual: <code id="manualText"></code></li>
         <li>Halaman ini akan berubah otomatis setelah terverifikasi.</li>
       </ol>
+      <div class="sandbox" id="sandboxBox" hidden>
+        <p><b>Mode sandbox.</b> Untuk development: tandai verifikasi ini berhasil tanpa WhatsApp. Webhook tetap dikirim ke project.</p>
+        <button class="btn btn-ghost" id="simulateBtn" type="button">Simulasikan verifikasi berhasil</button>
+      </div>
       <div class="waiting"><span class="pulse"></span>Menunggu pesan kamu…</div>
     </div>
 
@@ -168,6 +176,7 @@
         $("#waBtn").setAttribute("aria-disabled", "true");
       }
       $("#qrBox").hidden = !d.qr_svg;
+      $("#sandboxBox").hidden = !d.sandbox;
       if (d.qr_svg && $("#qr").dataset.code !== d.code) {
         $("#qr").innerHTML = d.qr_svg; // SVG dari server kita sendiri (library qrcode)
         $("#qr").dataset.code = d.code;
@@ -210,6 +219,20 @@
         $("#copyBtn use").setAttribute("href", "#i-check");
         setTimeout(() => $("#copyBtn use").setAttribute("href", "#i-copy"), 1500);
       } catch {}
+    });
+
+    $("#simulateBtn").addEventListener("click", async () => {
+      const btn = $("#simulateBtn");
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/public/verifications/${encodeURIComponent(token)}/simulate`, { method: "POST" });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) alert(body.message || "Simulasi gagal");
+      } finally {
+        btn.disabled = false;
+        clearTimeout(pollTimer);
+        load();
+      }
     });
 
     load();

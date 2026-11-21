@@ -155,36 +155,72 @@ export const sendWebhook = async (v, project) => {
 };
 
 /**
- * Proses pesan WA yang diawali PREFIX.
- * @returns {Promise<null | { mode: string, emoji: string, text: string }>}
- *   null kalau kode tidak ada / tidak dikenal (project tidak diketahui → bot diam)
+ * Tandai verifikasi berhasil atas nama `phone` lalu kirim webhook (dipakai bot & simulasi).
+ * @param {object} v verifikasi + project
+ * @returns {Promise<"ok"|"used"|"expired"|"phone_mismatch">}
  */
-export const verifyFromMessage = async (text, senderNumber) => {
-  const match = text.match(CODE_REGEX);
-  if (!match) return null;
+export const confirmVerification = async (v, phone) => {
+  if (v.status === "verified") return "used";
+  if (v.expires_at < new Date()) return "expired";
+  if (v.phone && v.phone !== phone) return "phone_mismatch";
 
-  const code = `VERF-${match[1].toUpperCase()}`;
-  const v = await prisma.verification.findUnique({ where: { code }, include: { project: true } });
-  if (!v || !v.project.active) return null;
-
-  const respond = (emoji, msg) => ({ mode: v.project.reply_mode, emoji, text: msg });
-
-  if (v.status === "verified") return respond("ℹ️", "ℹ️ Kode ini sudah digunakan.");
-  if (v.expires_at < new Date()) return respond("⌛", "⌛ Kode verifikasi sudah kedaluwarsa, silahkan minta kode baru.");
-  if (v.phone && v.phone !== senderNumber) return respond("❌", "❌ Nomor ini tidak sesuai dengan permintaan verifikasi.");
-
-  // Klaim atomic: kalau pesan masuk dua kali bersamaan, hanya satu yang menang
+  // Klaim atomic: kalau dua request masuk bersamaan, hanya satu yang menang
   const verifiedAt = new Date();
   const { count } = await prisma.verification.updateMany({
     where: { id: v.id, status: "pending" },
-    data: { status: "verified", verified_phone: senderNumber, verified_at: verifiedAt },
+    data: { status: "verified", verified_phone: phone, verified_at: verifiedAt },
   });
-  if (count === 0) return respond("ℹ️", "ℹ️ Kode ini sudah digunakan.");
+  if (count === 0) return "used";
 
-  // Webhook di background supaya respon ke user tidak menunggu server client
-  sendWebhook({ ...v, verified_phone: senderNumber, verified_at: verifiedAt }, v.project).catch((e) =>
+  // Webhook di background supaya respon tidak menunggu server client
+  sendWebhook({ ...v, verified_phone: phone, verified_at: verifiedAt }, v.project).catch((e) =>
     console.error("[Verification] Webhook error:", e),
   );
+  return "ok";
+};
 
+const SIMULATE_ERRORS = {
+  used: [409, "Kode ini sudah digunakan"],
+  expired: [410, "Kode verifikasi sudah kedaluwarsa"],
+  phone_mismatch: [400, "phone tidak sesuai dengan nomor di permintaan verifikasi"],
+};
+export const DEFAULT_SIMULATE_PHONE = "6280000000000";
+
+/**
+ * Simulasi user mengirim kode ke bot (hanya project sandbox). Webhook tetap dikirim sungguhan.
+ * @returns {Promise<object>} verifikasi terbaru
+ */
+export const simulateVerification = async (v, phone) => {
+  if (!v.project.sandbox) {
+    throw Object.assign(new Error("Simulasi hanya untuk project mode sandbox"), { status: 403 });
+  }
+  const sender = phone ? normalizePhone(phone) : v.phone || DEFAULT_SIMULATE_PHONE;
+  const result = await confirmVerification(v, sender);
+  if (result !== "ok") {
+    const [status, message] = SIMULATE_ERRORS[result];
+    throw Object.assign(new Error(message), { status });
+  }
+  return prisma.verification.findUnique({ where: { id: v.id } });
+};
+
+/**
+ * Proses pesan WA yang diawali PREFIX.
+ * @returns {Promise<{ result: string, code?: string, mode?: string, emoji?: string, text?: string }>}
+ *   result "no_code" / "unknown" → project tidak diketahui, bot diam
+ */
+export const verifyFromMessage = async (text, senderNumber) => {
+  const match = text.match(CODE_REGEX);
+  if (!match) return { result: "no_code" };
+
+  const code = `VERF-${match[1].toUpperCase()}`;
+  const v = await prisma.verification.findUnique({ where: { code }, include: { project: true } });
+  if (!v || !v.project.active) return { result: "unknown", code };
+
+  const result = await confirmVerification(v, senderNumber);
+  const respond = (emoji, msg) => ({ result, code, mode: v.project.reply_mode, emoji, text: msg });
+
+  if (result === "used") return respond("ℹ️", "ℹ️ Kode ini sudah digunakan.");
+  if (result === "expired") return respond("⌛", "⌛ Kode verifikasi sudah kedaluwarsa, silahkan minta kode baru.");
+  if (result === "phone_mismatch") return respond("❌", "❌ Nomor ini tidak sesuai dengan permintaan verifikasi.");
   return respond("✅", v.project.success_message || `✅ Verifikasi ${code} berhasil. Silahkan kembali ke aplikasi.`);
 };

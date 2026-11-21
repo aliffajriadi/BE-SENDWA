@@ -126,6 +126,7 @@
       <a href="#webhook">Webhook</a>
       <a href="#verifikasi-signature">Verifikasi signature</a>
       <a href="#contoh-lengkap">Contoh lengkap</a>
+      <a href="#simulasi">Simulasi (sandbox)</a>
       <a href="#testing">Testing</a>
     </nav>
 
@@ -476,10 +477,52 @@ def webhook():
 });</pre></div>
       </section>
 
+      <!-- ───────────── Simulasi ───────────── -->
+      <section id="simulasi">
+        <h2>Simulasi (sandbox)</h2>
+        <p>Saat development, kamu tidak perlu mengirim WhatsApp sungguhan. Minta admin membuat <b>project sandbox</b> (Projects → Edit → <i>Mode sandbox</i>), lalu simulasikan user yang mengirim kode. Hasilnya sama persis dengan verifikasi asli: status berubah jadi <code>verified</code> dan <b>webhook dikirim sungguhan</b> dengan signature yang valid.</p>
+        <div class="callout warn">
+          <svg><use href="#i-warn"/></svg>
+          <p>Simulasi ditolak (<code>403</code>) untuk project yang bukan sandbox. Pakai project sandbox terpisah untuk development, dan project biasa untuk production.</p>
+        </div>
+
+        <h3>Lewat API</h3>
+        <div class="endpoint"><span class="method post">POST</span>/api/v1/verifications/:id/simulate</div>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr></thead>
+          <tbody>
+            <tr><td><code>phone</code></td><td>string</td><td>Opsional. Nomor yang dianggap mengirim pesan. Default: <code>phone</code> verifikasi, atau <code>6280000000000</code>. Isi nomor lain untuk menguji kasus nomor tidak sesuai.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="code"><pre># 1. buat verifikasi
+ID=$(curl -s -X POST <span class="base-url">https://domain-kamu.com</span>/api/v1/verifications   -H "x-api-key: pk_live_xxx" -H "Content-Type: application/json"   -d '{"phone":"081234567890","reference":"user_123"}' | jq -r .id)
+
+# 2. simulasikan user mengirim kode → webhook terkirim
+curl -X POST <span class="base-url">https://domain-kamu.com</span>/api/v1/verifications/$ID/simulate   -H "x-api-key: pk_live_xxx"</pre></div>
+        <p>Response: <a href="#objek-verifikasi">objek verifikasi</a> dengan <code>status: "verified"</code>. Error yang mungkin muncul:</p>
+        <div class="doc-table-wrap"><table class="doc-table">
+          <thead><tr><th>Status</th><th>Arti</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td><code>phone</code> berbeda dari nomor di permintaan verifikasi (sama seperti bot menolak nomor lain).</td></tr>
+            <tr><td><code>403</code></td><td>Project bukan sandbox.</td></tr>
+            <tr><td><code>404</code></td><td>Verifikasi tidak ditemukan.</td></tr>
+            <tr><td><code>409</code></td><td>Kode sudah dipakai.</td></tr>
+            <tr><td><code>410</code></td><td>Kode sudah kedaluwarsa.</td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Lewat halaman verifikasi</h3>
+        <p>Untuk project sandbox, <code>verification_url</code> menampilkan tombol <b>Simulasikan verifikasi berhasil</b>. Cocok untuk menguji alur redirect dari awal sampai akhir.</p>
+
+        <h3>Lewat dashboard</h3>
+        <p>Di <b>Verifikasi WA</b>, verifikasi pending milik project sandbox punya tombol ✓ untuk simulasi. Tombol yang sama juga ada setelah <b>Buat Verifikasi</b>.</p>
+      </section>
+
       <!-- ───────────── Testing ───────────── -->
       <section id="testing">
         <h2>Testing</h2>
         <ul>
+          <li>Gunakan <a href="#simulasi">project sandbox</a> supaya bisa menguji webhook tanpa WhatsApp.</li>
           <li>Di dashboard admin → <b>Projects</b>, tombol <b>Test</b> membuat kode baru dan membuka WhatsApp, tanpa perlu menulis kode.</li>
           <li>Untuk menerima webhook di laptop, pakai tunnel (misal ngrok atau cloudflared) lalu isi URL-nya sebagai Webhook URL project.</li>
           <li>Riwayat dan status webhook ada di dashboard → <b>Verifikasi WA</b>. Webhook yang gagal bisa dikirim ulang dari sana.</li>

@@ -10,6 +10,7 @@ import {
   REPLY_MODES,
   baseUrl,
   sendWebhook,
+  simulateVerification,
   toPayload,
   validExpires,
 } from "../../features/verification/verification.js";
@@ -138,6 +139,7 @@ export const adminRoutes = ({ getStatus, getSock }) => {
         reply_mode: replyMode,
         success_message: String(body.success_message ?? "").trim() || null,
         active: body.active === undefined ? true : Boolean(body.active),
+        sandbox: Boolean(body.sandbox),
       },
     };
   };
@@ -196,7 +198,7 @@ export const adminRoutes = ({ getStatus, getSock }) => {
     if (!project) return res.status(404).json({ message: "Project tidak ditemukan" });
     try {
       const v = await createVerification(project, req.body ?? {});
-      res.status(201).json({ ...toPayload(v, number, baseUrl(req)), project: project.name });
+      res.status(201).json({ ...toPayload(v, number, baseUrl(req)), project: project.name, sandbox: project.sandbox });
     } catch (error) {
       if (!error.status) throw error;
       res.status(error.status).json({ message: error.message });
@@ -209,7 +211,7 @@ export const adminRoutes = ({ getStatus, getSock }) => {
       where: req.query.project_id ? { project_id: String(req.query.project_id) } : undefined,
       orderBy: { createdAt: "desc" },
       take: Math.min(toInt(req.query.limit, 100), 500),
-      include: { project: { select: { name: true, webhook_url: true } } },
+      include: { project: { select: { name: true, webhook_url: true, sandbox: true } } },
     });
     const base = baseUrl(req);
     res.json(list.map((v) => ({ ...v, status: effectiveStatus(v), verification_url: `${base}/verify/${v.token}` })));
@@ -221,6 +223,18 @@ export const adminRoutes = ({ getStatus, getSock }) => {
     if (v.status !== "verified") return res.status(400).json({ message: "Belum terverifikasi" });
     if (!v.project.webhook_url) return res.status(400).json({ message: "Project belum punya Webhook URL" });
     res.json({ webhook_status: await sendWebhook(v, v.project) });
+  });
+
+  // Simulasi verifikasi berhasil (hanya project sandbox). Body opsional: { phone }
+  router.post("/verifications/:id/simulate", async (req, res) => {
+    const v = await prisma.verification.findUnique({ where: { id: req.params.id }, include: { project: true } });
+    if (!v) return res.status(404).json({ message: "Verifikasi tidak ditemukan" });
+    try {
+      res.json(await simulateVerification(v, req.body?.phone));
+    } catch (error) {
+      if (!error.status) throw error;
+      res.status(error.status).json({ message: error.message });
+    }
   });
 
   router.delete("/verifications/:id", async (req, res) => {
